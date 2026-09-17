@@ -9,6 +9,7 @@ constexpr Color BackgroundColor{20, 24, 32, 255};
 int main()
 {
   InitWindow(ScreenWidth, ScreenHeight, "Homework Assignment");
+  SetWindowPosition(0, 0);
   SetTargetFPS(TargetFps);
 
   Game game;
