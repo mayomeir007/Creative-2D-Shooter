@@ -58,7 +58,7 @@ void Game::Draw(int screenWidth, int screenHeight) const
   switch (m_state)
   {
     case GameState::MainMenu:
-      m_mainMenuScreen.Draw(screenWidth, screenHeight);
+      m_mainMenuScreen.Draw(screenWidth, screenHeight, m_score);
       break;
     case GameState::Playing:
       m_world.Draw();
@@ -67,17 +67,17 @@ void Game::Draw(int screenWidth, int screenHeight) const
     case GameState::Paused:
       m_world.Draw();
       m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
-      m_pausedScreen.Draw(screenWidth, screenHeight);
+      m_pausedScreen.Draw(screenWidth, screenHeight, m_score);
       break;
     case GameState::GameOver:
       m_world.Draw();
       m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
-      m_gameOverScreen.Draw(screenWidth, screenHeight);
+      m_gameOverScreen.Draw(screenWidth, screenHeight, m_score);
       break;
     case GameState::Win:
       m_world.Draw();
       m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
-      m_winScreen.Draw(screenWidth, screenHeight);
+      m_winScreen.Draw(screenWidth, screenHeight, m_score);
       break;
   }
 }

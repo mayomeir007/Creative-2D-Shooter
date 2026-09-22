@@ -29,8 +29,8 @@ private:
   bool m_quitRequested = false;
   CWorld m_world;
   CHud m_hud;
-  COverlayScreen m_mainMenuScreen{"CREATIVE 2D SHOOTER", DARKGRAY, true};
-  COverlayScreen m_pausedScreen{"PAUSED", RAYWHITE, false};
-  COverlayScreen m_gameOverScreen{"GAME OVER", RED, true};
-  COverlayScreen m_winScreen{"YOU WON", GREEN, true};
+  COverlayScreen m_mainMenuScreen{"CREATIVE 2D SHOOTER", DARKGRAY, true, false};
+  COverlayScreen m_pausedScreen{"PAUSED", RAYWHITE, false, false};
+  COverlayScreen m_gameOverScreen{"GAME OVER", RED, true, true};
+  COverlayScreen m_winScreen{"YOU WON", GREEN, true, true};
 };
