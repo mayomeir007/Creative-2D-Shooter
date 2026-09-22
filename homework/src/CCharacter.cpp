@@ -85,8 +85,16 @@ void CCharacter::Draw() const
   const Vector2 eyeCenter = Vector2Add(m_position, Vector2Scale(facing, m_radius * 0.5f));
   const Vector2 perp{-facing.y, facing.x};
   const Vector2 eyeOffset = Vector2Scale(perp, Config::EyeSpacing * 0.5f);
-  DrawCircleV(Vector2Add(eyeCenter, eyeOffset), Config::EyeRadius, Config::EyeColor);
-  DrawCircleV(Vector2Subtract(eyeCenter, eyeOffset), Config::EyeRadius, Config::EyeColor);
+  const Vector2 leftEye = Vector2Add(eyeCenter, eyeOffset);
+  const Vector2 rightEye = Vector2Subtract(eyeCenter, eyeOffset);
+  DrawCircleV(leftEye, Config::EyeRadius, Config::EyeColor);
+  DrawCircleV(rightEye, Config::EyeRadius, Config::EyeColor);
+
+  // Pupils sit on the forward-facing side of each eye, half the eye's radius.
+  constexpr float PupilRadius = Config::EyeRadius * 0.5f;
+  const Vector2 pupilShift = Vector2Scale(facing, Config::EyeRadius - PupilRadius);
+  DrawCircleV(Vector2Add(leftEye, pupilShift), PupilRadius, Config::PupilColor);
+  DrawCircleV(Vector2Add(rightEye, pupilShift), PupilRadius, Config::PupilColor);
 }
 
 void CCharacter::TakeDamage(int amount)

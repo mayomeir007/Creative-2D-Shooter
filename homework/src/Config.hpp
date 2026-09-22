@@ -65,6 +65,7 @@ namespace Config
   constexpr Color EnemyProjectileColor{255, 120, 120, 255};
   constexpr Color GunColor{40, 44, 52, 255};
   constexpr Color EyeColor{255, 255, 255, 255};
+  constexpr Color PupilColor{40, 44, 52, 255};
   constexpr float GunLength = 26.0f;
   constexpr float GunWidth = 10.0f;
   constexpr float EyeRadius = 4.0f;
