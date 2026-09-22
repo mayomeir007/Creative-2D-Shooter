@@ -38,6 +38,16 @@ namespace Config
   constexpr float ObstacleMaxSize = 260.0f;
   constexpr float ObstacleClearanceFromSpawn = 150.0f;
 
+  // A gap narrower than the player's diameter isn't a corridor at all — the
+  // player is blocked flush against the obstacle's face well before reaching
+  // the wall, same as any ordinary obstacle edge, so it's left alone. Only a
+  // gap from the diameter up to a small buffer above it (for the
+  // axis-separated slide's imprecision at that width) is wide enough to
+  // partially enter but too narrow to reliably pass through — that's the
+  // only range rejected during generation.
+  constexpr float StickingGapMin = CharacterRadius * 2.0f; // player's diameter
+  constexpr float StickingGapMax = StickingGapMin + 32.0f;
+
   // Scoring
   constexpr int ScorePerKill = 1;
 
