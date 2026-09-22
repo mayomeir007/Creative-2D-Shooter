@@ -1,0 +1,28 @@
+#include "CWeaponSpec.hpp"
+#include "Config.hpp"
+
+CWeaponSpec CWeaponSpec::Uzi()
+{
+  return CWeaponSpec{
+      "Uzi",
+      Config::UziMagazineSize,
+      false,
+      Config::UziFireRate,
+      Config::ProjectileSpeed,
+      Config::DamagePerHit,
+      Config::UziReloadTime,
+  };
+}
+
+CWeaponSpec CWeaponSpec::Pistol()
+{
+  return CWeaponSpec{
+      "Pistol",
+      0,
+      true,
+      Config::PistolFireRate,
+      Config::ProjectileSpeed,
+      Config::DamagePerHit,
+      0.0f,
+  };
+}
