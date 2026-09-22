@@ -240,7 +240,10 @@ void CWorld::ResolveProjectileCollisions()
     if (projectile.Owner() == Faction::Enemy &&
         CCollision::CircleVsCircle(pos, radius, m_player.Position(), m_player.Radius()))
     {
-      m_player.TakeDamage(projectile.Damage());
+      if constexpr (!Config::DebugPlayerInvincible)
+      {
+        m_player.TakeDamage(projectile.Damage());
+      }
       m_effects.push_back(CEffect::Hit(pos, m_player.GetColor()));
       if (m_player.IsDead())
       {

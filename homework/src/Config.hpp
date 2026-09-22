@@ -32,7 +32,7 @@ namespace Config
   constexpr float PistolFireRate = 4.0f;
 
   // Population
-  constexpr int EnemyCount = 5;
+  constexpr int EnemyCount = 8;
   constexpr int ObstacleCount = 8;
   constexpr float ObstacleMinSize = 40.0f;
   constexpr float ObstacleMaxSize = 260.0f;
@@ -40,6 +40,11 @@ namespace Config
 
   // Scoring
   constexpr int ScorePerKill = 1;
+
+  // Debug/testing only — set back to false before shipping. When true, the
+  // player takes no damage from enemy projectiles (GameOver becomes
+  // unreachable via combat).
+  constexpr bool DebugPlayerInvincible = true;
 
   // Enemy color randomization (GAME_DESIGN.md §3.2): hue excluded near the
   // player's blue (~207°) so no enemy can be mistaken for the player.
