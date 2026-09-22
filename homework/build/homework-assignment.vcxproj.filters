@@ -120,6 +120,9 @@
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Config.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Difficulty.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Faction.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -53,6 +53,7 @@ set(OLD_GLOB
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWeaponSpec.hpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWorld.hpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Config.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Difficulty.hpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Faction.hpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Game.hpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/GameState.hpp"

@@ -62,21 +62,21 @@ void Game::Draw(int screenWidth, int screenHeight) const
       break;
     case GameState::Playing:
       m_world.Draw();
-      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
+      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft(), m_world.GetDifficulty());
       break;
     case GameState::Paused:
       m_world.Draw();
-      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
+      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft(), m_world.GetDifficulty());
       m_pausedScreen.Draw(screenWidth, screenHeight, m_score);
       break;
     case GameState::GameOver:
       m_world.Draw();
-      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
+      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft(), m_world.GetDifficulty());
       m_gameOverScreen.Draw(screenWidth, screenHeight, m_score);
       break;
     case GameState::Win:
       m_world.Draw();
-      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft());
+      m_hud.Draw(m_world.GetPlayer(), m_score, m_world.EnemiesLeft(), m_world.GetDifficulty());
       m_winScreen.Draw(screenWidth, screenHeight, m_score);
       break;
   }
@@ -136,7 +136,8 @@ void Game::UpdatePlaying(float dt, const CInputState& input)
 
 void Game::StartNewGame()
 {
-  m_world.Reset();
+  m_world.Reset(DetermineDifficulty());
+  ++m_gamesStarted;
   SetState(GameState::Playing);
 }
 
@@ -154,4 +155,17 @@ void Game::ResetScore()
 void Game::SetState(GameState s)
 {
   m_state = s;
+}
+
+Difficulty Game::DetermineDifficulty() const
+{
+  if (m_gamesStarted < Config::EasyGameCount)
+  {
+    return Difficulty::Easy;
+  }
+  if (m_gamesStarted < Config::EasyGameCount + Config::MediumGameCount)
+  {
+    return Difficulty::Medium;
+  }
+  return Difficulty::Hard;
 }

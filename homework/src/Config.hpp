@@ -31,8 +31,13 @@ namespace Config
   constexpr float UziReloadTime = 3.0f;
   constexpr float PistolFireRate = 4.0f;
 
+  // Easy-difficulty enemy weapon: a slower single-action sidearm, fire rate
+  // is a fixed ratio of the player's Uzi.
+  constexpr float RevolverFireRate = UziFireRate * 0.25f;
+  constexpr Color RevolverColor{150, 150, 158, 255}; // gray
+
   // Population
-  constexpr int EnemyCount = 8;
+  constexpr int EnemyCount = 5;
   constexpr int ObstacleCount = 8;
   constexpr float ObstacleMinSize = 40.0f;
   constexpr float ObstacleMaxSize = 260.0f;
@@ -50,6 +55,12 @@ namespace Config
 
   // Scoring
   constexpr int ScorePerKill = 1;
+
+  // Difficulty progression (developer-tunable): the first EasyGameCount
+  // games are Easy, the next MediumGameCount are Medium, everything after
+  // that is Hard. Counts every Start press for the life of the app.
+  constexpr int EasyGameCount = 5;
+  constexpr int MediumGameCount = 5;
 
   // Debug/testing only — set back to false before shipping. When true, the
   // player takes no damage from enemy projectiles (GameOver becomes

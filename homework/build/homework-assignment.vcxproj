@@ -352,6 +352,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWeaponSpec.hpp" />
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWorld.hpp" />
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Config.hpp" />
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Difficulty.hpp" />
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Faction.hpp" />
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Game.hpp" />
     <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\GameState.hpp" />

@@ -5,11 +5,21 @@
 #include "CObstacle.hpp"
 #include "CWeaponSpec.hpp"
 
-CEnemy::CEnemy(Vector2 spawn, Color color)
+namespace
+{
+  CWeapon MakeEnemyWeapon(Difficulty difficulty)
+  {
+    // Easy enemies carry a slower revolver; Medium/Hard use the baseline pistol.
+    return (difficulty == Difficulty::Easy) ? CWeapon(CWeaponSpec::Revolver()) : CWeapon(CWeaponSpec::Pistol());
+  }
+}
+
+CEnemy::CEnemy(Vector2 spawn, Color color, Difficulty difficulty)
     : CCharacter(spawn, Config::CharacterRadius, color, Config::MaxHealth, Config::MoveSpeed,
-                 CWeapon(CWeaponSpec::Pistol())),
+                 MakeEnemyWeapon(difficulty)),
       m_turnRate(Config::EnemyTurnRateDegPerSec),
-      m_aimTolerance(Config::EnemyAimToleranceDeg)
+      m_aimTolerance(Config::EnemyAimToleranceDeg),
+      m_difficulty(difficulty)
 {
   m_facingRad = PI / 2.0f; // straight down, per GAME_DESIGN.md §3.2
 }

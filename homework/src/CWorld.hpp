@@ -8,6 +8,7 @@
 #include "CObstacle.hpp"
 #include "CProjectile.hpp"
 #include "CEffect.hpp"
+#include "Difficulty.hpp"
 
 class CInputState;
 
@@ -18,7 +19,7 @@ class CWorld
 {
 public:
   void Init(int screenWidth, int screenHeight);
-  void Reset();
+  void Reset(Difficulty difficulty);
   void Update(float dt, const CInputState& input);
   void Draw() const;
   bool PlayerIsDead() const;
@@ -26,6 +27,7 @@ public:
   int EnemiesLeft() const;
   int ConsumeKills();
   const CPlayer& GetPlayer() const;
+  Difficulty GetDifficulty() const;
 
 private:
   void TickTimers(float dt);
@@ -49,4 +51,5 @@ private:
   std::vector<CEffect> m_effects;
   std::mt19937 m_rng;
   int m_pendingKills = 0;
+  Difficulty m_difficulty = Difficulty::Easy;
 };

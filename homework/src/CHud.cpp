@@ -3,11 +3,12 @@
 #include "Guide.hpp"
 #include "Config.hpp"
 
-void CHud::Draw(const CPlayer& player, int score, int enemiesLeft) const
+void CHud::Draw(const CPlayer& player, int score, int enemiesLeft, Difficulty difficulty) const
 {
   DrawStats(player, score, enemiesLeft);
   DrawControlsLegend();
   DrawFps();
+  DrawDifficulty(difficulty);
 }
 
 void CHud::DrawStats(const CPlayer& player, int score, int enemiesLeft) const
@@ -51,4 +52,26 @@ void CHud::DrawControlsLegend() const
 void CHud::DrawFps() const
 {
   HomeworkGuide::DrawFpsMeter(Config::ScreenWidth);
+}
+
+void CHud::DrawDifficulty(Difficulty difficulty) const
+{
+  constexpr int fontSize = 28;
+  constexpr int leftMargin = 32;
+  constexpr int topMargin = 30;
+
+  const char* name = "Easy";
+  Color color = HomeworkGuide::PrimaryTextColor;
+  if (difficulty == Difficulty::Medium)
+  {
+    name = "Medium";
+    color = YELLOW;
+  }
+  else if (difficulty == Difficulty::Hard)
+  {
+    name = "Hard";
+    color = RED;
+  }
+
+  HomeworkGuide::DrawUiText(TextFormat("Difficulty: %s", name), leftMargin, topMargin, fontSize, color);
 }

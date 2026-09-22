@@ -79,7 +79,7 @@ void CCharacter::Draw() const
 
   const Rectangle gunRect{m_position.x, m_position.y, Config::GunLength, Config::GunWidth};
   const Vector2 gunOrigin{-m_radius, Config::GunWidth / 2.0f};
-  DrawRectanglePro(gunRect, gunOrigin, m_facingRad * RAD2DEG, Config::GunColor);
+  DrawRectanglePro(gunRect, gunOrigin, m_facingRad * RAD2DEG, m_weapon.Spec().m_gunColor);
 
   const Vector2 facing = FacingDir();
   const Vector2 eyeCenter = Vector2Add(m_position, Vector2Scale(facing, m_radius * 0.5f));

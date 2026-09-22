@@ -1,4 +1,5 @@
 #pragma once
+#include "Difficulty.hpp"
 
 class CPlayer;
 
@@ -7,10 +8,11 @@ class CPlayer;
 class CHud
 {
 public:
-  void Draw(const CPlayer& player, int score, int enemiesLeft) const;
+  void Draw(const CPlayer& player, int score, int enemiesLeft, Difficulty difficulty) const;
 
 private:
   void DrawStats(const CPlayer& player, int score, int enemiesLeft) const;
   void DrawControlsLegend() const;
   void DrawFps() const;
+  void DrawDifficulty(Difficulty difficulty) const;
 };

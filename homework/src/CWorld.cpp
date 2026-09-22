@@ -15,8 +15,9 @@ void CWorld::Init(int screenWidth, int screenHeight)
   m_rng.seed(std::random_device{}());
 }
 
-void CWorld::Reset()
+void CWorld::Reset(Difficulty difficulty)
 {
+  m_difficulty = difficulty;
   m_player.ResetToSpawn();
 
   const std::vector<Vector2> enemySpawns = CSpawnLayout::EnemySpawns(m_arena, Config::EnemyCount);
@@ -24,7 +25,7 @@ void CWorld::Reset()
   m_enemies.reserve(enemySpawns.size());
   for (const Vector2& spawn : enemySpawns)
   {
-    m_enemies.emplace_back(spawn, CSpawnLayout::RandomEnemyColor(m_rng));
+    m_enemies.emplace_back(spawn, CSpawnLayout::RandomEnemyColor(m_rng), m_difficulty);
   }
 
   std::vector<Vector2> clearancePoints = enemySpawns;
@@ -99,6 +100,11 @@ int CWorld::ConsumeKills()
 const CPlayer& CWorld::GetPlayer() const
 {
   return m_player;
+}
+
+Difficulty CWorld::GetDifficulty() const
+{
+  return m_difficulty;
 }
 
 void CWorld::TickTimers(float dt)
