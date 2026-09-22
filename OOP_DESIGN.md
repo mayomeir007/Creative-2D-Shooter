@@ -143,10 +143,10 @@ without these initializers `Game` wouldn't be default-constructible, and
 
 | Signature | Notes |
 |---|---|
-| `void Init(int screenWidth, int screenHeight, int targetFps)` | Existing signature. No longer needs to build the `COverlayScreen`s (done above) — calls `m_world.Init(screenWidth, screenHeight)`, `SetExitKey(KEY_NULL)` (§1's implementation note) |
+| `void Init(int screenWidth, int screenHeight, int targetFps)` | Existing signature. No longer needs to build the `COverlayScreen`s (done above) — calls `m_world.Init(screenWidth, screenHeight)` and `SetExitKey(KEY_NULL)` (§1's implementation note). Does **not** call `m_world.Reset()` — see `Draw`'s note below for why that's no longer needed |
 | `void Shutdown()` | Existing signature |
 | `void Update(float deltaTime)` | Existing signature. See flow below |
-| `void Draw(int screenWidth, int screenHeight) const` | Existing signature. Always draws `m_world` + `m_hud` as backdrop, then overlays the active screen on top for Paused/GameOver/Win/MainMenu |
+| `void Draw(int screenWidth, int screenHeight) const` | Existing signature. For `Paused`/`GameOver`/`Win`, draws `m_world` + `m_hud` as the frozen backdrop, then the active overlay screen on top — matching `GAME_DESIGN.md` §1, which explicitly calls for a battlefield backdrop under all three. For `MainMenu`, draws **only** `m_mainMenuScreen` (title + button) — §1 describes MainMenu as just that, with no backdrop, unlike the other three. This was a real bug in an earlier draft: it had `MainMenu` sharing the same "always draw the backdrop" path, which meant `Init()` had to force an early `m_world.Reset()` just so the very first MainMenu wouldn't show an empty arena — and even then, an Esc back to MainMenu *mid-game* (`ReturnToMenu()`, which never resets `m_world`) would still show that abandoned game's battle-scarred leftovers behind the title, contradicting the very consistency that early `Reset()` was supposed to buy. Not drawing the backdrop for `MainMenu` at all fixes both problems in one move, and matches the spec, which never asked for a MainMenu backdrop to begin with |
 | `bool ShouldQuit() const` | New — `main()`'s loop condition becomes `!WindowShouldClose() && !game.ShouldQuit()` |
 | `private: bool HandleGlobalInput(const CInputState& input)` | Esc/P handling, state-dependent per §1 and §5 step 2. Returns `true` if it consumed the frame (a transition happened), telling `Update` to skip the state-specific branch below |
 | `private: void UpdatePlaying(float dt, const CInputState& input)` | The `Playing`-state branch of `Update`: runs `m_world.Update(dt, input)`, folds `m_world.ConsumeKills()` into `m_score`, then checks `m_world.PlayerIsDead()`/`m_world.AllEnemiesDead()` and calls `SetState` accordingly. Pulled into its own method because it's the only one of the five state branches with more than one statement — MainMenu/GameOver/Win are each a single `if`, and Paused does nothing |
@@ -154,6 +154,29 @@ without these initializers `Game` wouldn't be default-constructible, and
 | `private: void ReturnToMenu()` | Sets state to `MainMenu`, calls `ResetScore()` |
 | `private: void ResetScore()` | `m_score = 0`. Called by `ReturnToMenu()` and by the GameOver→Start/Esc transition, per "Score lifetime" in §1 |
 | `private: void SetState(GameState s)` | Trivial setter, kept as a single choke point in case transitions ever need side effects (e.g. logging) |
+
+**`HandleGlobalInput` logic, in words** (§1's Esc/P rules, §5 step 2):
+```
+if (input.m_escPressed)
+{
+    if (m_state == GameState::MainMenu) m_quitRequested = true;
+    else                                ReturnToMenu();
+    return true;  // always consumes the frame
+}
+if (input.m_pausePressed)
+{
+    if (m_state == GameState::Playing) { SetState(GameState::Paused);  return true; }
+    if (m_state == GameState::Paused)  { SetState(GameState::Playing); return true; }
+    // MainMenu/GameOver/Win: P has no effect (§1) — falls through, frame not consumed
+}
+return false;
+```
+Esc is checked first; since it always returns `true` when pressed, a frame
+can never process both an Esc and a P transition. P only ever changes
+anything from `Playing` or `Paused` — from any other state it falls through
+to `return false`, letting `Update`'s normal per-state branch still run that
+frame (e.g. a menu click on the same frame as a stray P press still
+registers).
 
 **`Update` flow, in words:**
 1. `input = CInputState::Sample()`.
@@ -164,6 +187,9 @@ without these initializers `Game` wouldn't be default-constructible, and
    - `Paused`: nothing — frame is frozen.
    - `GameOver`: `if (m_gameOverScreen.Update(...)) { ResetScore(); StartNewGame(); }`
    - `Win`: `if (m_winScreen.Update(...)) StartNewGame();` — score carries over, per §1.
+
+See `Draw`'s row above for why `MainMenu` doesn't draw `m_world`/`m_hud` at
+all, unlike the other three non-`Playing` states.
 
 ---
 
@@ -213,12 +239,12 @@ assignable, which they already are.
 | `int ConsumeKills()` | Returns `m_pendingKills` and resets it to 0 |
 | `const CPlayer& GetPlayer() const` | Read access for `CHud` |
 | `private: void TickTimers(float dt)` | §5 step 3 — calls `Tick(dt)` on the player and on every enemy; each one forwards internally to its own `m_weapon.Tick(dt)` |
-| `private: void UpdateSteeringAndInput(float dt, const CInputState& input)` | §5 step 4 — player desired displacement from WSAD; each enemy's from line-of-sight (direct-approach or corner-seek) |
-| `private: void ResolveObstacleSliding()` | §5 step 5 — axis-separated slide, per entity, via `CCharacter::MoveWithSlide` |
+| `private: void UpdateSteeringAndInput(float dt, const CInputState& input)` | §5 step 4 — `if (input.m_reloadPressed) m_player.StartReload();` then `m_player.ApplyMoveInput(input.m_moveDir, dt)`; for each enemy, `enemy.ChooseSteering(m_player.Position(), m_obstacles, dt)`. `HasLineOfSight` is not cached anywhere (§7) — `ChooseSteering`'s internal LOS test here is independent of, and can disagree with, `ResolveFiring`'s own fresh test at step 9 |
+| `private: void ResolveObstacleSliding()` | §5 step 5 — `m_player.MoveWithSlide(m_obstacles)`, then the same for each enemy. Each consumes (and clears) the `m_pendingMove` its own step-4 call just wrote |
 | `private: void ClampToArenaBounds()` | §5 step 6 |
-| `private: void ResolvePushApart()` | §5 step 7 — for every player/enemy circle pair, reads both positions, calls `CCollision::ResolveCircleOverlap` on them, writes the results back via `SetPosition`, then re-clamps to the arena |
-| `private: void UpdateFacing(float dt)` | §5 step 8 — player snaps to mouse; each enemy turns at most `180°/s × dt` |
-| `private: void ResolveFiring(const CInputState& input)` | §5 step 9 — player fires when `input.m_fireHeld` and its weapon allows it; each enemy fires when LOS + facing-tolerance + cooldown all pass. Appends to `m_projectiles`. Needs `input` directly — it isn't cached anywhere between step 4 and step 9 |
+| `private: void ResolvePushApart()` | §5 step 7 — for every pair of player/enemy circles: every enemy-vs-enemy pair *and* every player-vs-enemy pair (`GAME_DESIGN.md`'s §5 summary table requires both, not just cross-type pairs), reads both positions, calls `CCollision::ResolveCircleOverlap` on them, writes the results back via `SetPosition`, then re-clamps to the arena |
+| `private: void UpdateFacing(float dt, const CInputState& input)` | §5 step 8 — `m_player.AimAt(input.m_mousePos)`; each enemy's `UpdateFacing(dt, m_player.Position())`. Needs `input` directly for the same reason `ResolveFiring` does below — the mouse position isn't cached anywhere between step 1 and step 8 |
+| `private: void ResolveFiring(const CInputState& input)` | §5 step 9 — player fires when `input.m_fireHeld` and its weapon allows it; each enemy fires when `enemy.HasLineOfSight(m_player.Position(), m_obstacles)` (re-tested fresh here, not the step-4 result — see `CEnemy::HasLineOfSight`) + `IsAimedAtPlayer` + cooldown all pass. Appends to `m_projectiles`. Needs `input` directly — it isn't cached anywhere between step 4 and step 9 |
 | `private: void UpdateProjectiles(float dt)` | §5 step 10 |
 | `private: void ResolveProjectileCollisions()` | §5 step 11 — projectile vs. obstacle/arena/circles, damage with health clamped to ≥0; pushes `CEffect::Hit(...)` on any hit and `CEffect::Death(...)` if the target's health reached 0, then defers removal to `ReapDeadEnemies` |
 | `private: void ReapDeadEnemies()` | Removes dead enemies from `m_enemies`, increments `m_pendingKills` once per removed enemy regardless of who shot it (§6 score rule) |
@@ -245,8 +271,7 @@ assignable, which they already are.
 | `CArena(int screenWidth, int screenHeight, float margin)` | Computes `m_bounds = {margin, margin, screenWidth - 2*margin, screenHeight - 2*margin}`; stores `margin` in `m_margin`. Constructed by `CWorld::Init` |
 | `Rectangle Bounds() const` | |
 | `Vector2 ClampCircle(Vector2 pos, float radius) const` | Center clamped to `[M+r, size-M-r]` on each axis, per §2 |
-| `bool Contains(Vector2 point) const` | Point-in-bounds test, used by the two methods below |
-| `bool CircleExitsBounds(Vector2 pos, float radius) const` | True once the circle's edge would cross the boundary — the projectile-destruction condition in §3.3 |
+| `bool CircleExitsBounds(Vector2 pos, float radius) const` | True once the circle's edge would cross the boundary — the projectile-destruction condition in §3.3. Implemented as `!Vector2Equals(ClampCircle(pos, radius), pos)` — if clamping would move the center, the circle was already out of bounds. (An earlier draft of this table also listed a `Contains(Vector2) const` point-in-rect test "used by the two methods below," but on inspection nothing actually called it — dropped rather than leaving unused public API around) |
 | `void Draw() const` | Thin border outline |
 
 ### CObstacle
@@ -265,9 +290,8 @@ assignable, which they already are.
 | `Rectangle Rect() const` | Plain accessor — needed by `CCollision`, `CEnemy` steering, drawing, everything external |
 | `bool BlocksCircle(Vector2 center, float radius) const` | Circle-vs-AABB test, used both for character movement (§5) and projectile collision (§3.3). Delegates to `CCollision::CircleVsRect` |
 | `bool BlocksSegment(Vector2 a, Vector2 b) const` | Segment-vs-AABB, for the enemy line-of-sight test (§3.2). Delegates to `CCollision::SegmentVsRect` |
-| `Vector2 NearestPoint(Vector2 from) const` | Closest point on/in the rectangle to an arbitrary point — used by the **150px spawn clearance** rule (rejection rule 1, §3.4), which explicitly measures to the nearest point, not a corner. Delegates to `CCollision::NearestPointOnRect` |
-| `Vector2 NearestCorner(Vector2 from) const` | Nearest of the four corner **vertices** — used by `CEnemy`'s corner-seek steering target (§3.2), which is a different geometric query from the one above. Delegates to `CCollision::NearestCornerOfRect` |
-| `float DistanceTo(Vector2 point) const` | `length(point - NearestPoint(point))` |
+| `Vector2 NearestCorner(Vector2 from) const` | Nearest of the four corner **vertices** — used by `CEnemy`'s corner-seek steering target (§3.2). Delegates to `CCollision::NearestCornerOfRect` |
+| `float DistanceTo(Vector2 point) const` | The real caller of the two overlapping candidates in an earlier draft: `CObstacleGenerator`'s **150px spawn clearance** check (rejection rule 1, §3.4) is a `distance < 150` comparison — it needs the scalar distance, not the point itself. Implemented as `length(point - CCollision::NearestPointOnRect(point, Rect()))` internally; there's no separate public `NearestPoint`, since nothing ever called it for the point itself rather than the distance derived from it |
 | `float GapTo(const CObstacle& other) const` | Rejection rule 2's gap formula (§3.4). Delegates to `CCollision::RectGap` |
 | `float HalfThickness() const` | `min(width, height) / 2`, per rejection rule 2 |
 | `void Draw() const` | Filled rect + lighter outline |
@@ -340,6 +364,7 @@ the two subclasses and belong in them.
 | `m_facingRad` | `float` | Radians; player snaps to mouse, enemy turns at a limited rate |
 | `m_moveSpeed` | `float` | 260 px/s for both (§7) |
 | `m_weapon` | `CWeapon` | Uzi for player, Pistol for enemy — distinct definitions, not a shared one (§4) |
+| `m_pendingMove` | `Vector2` | `= Vector2{0, 0}`. This frame's desired displacement — written at §5 step 4 (`CPlayer::ApplyMoveInput` or `CEnemy::ChooseSteering`), consumed and cleared by `MoveWithSlide` at step 5. Exists specifically because steps 4 and 5 are separate `CWorld`-driven passes over every entity (steer everyone, *then* slide everyone), so the desired displacement has to survive the gap between them |
 
 **Methods**
 
@@ -348,7 +373,7 @@ the two subclasses and belong in them.
 | `virtual Faction GetFaction() const = 0` | Lets `CProjectile`/friendly-fire logic branch without RTTI |
 | `Vector2 Position() const` | |
 | `float Radius() const` | |
-| `Color Color() const` | |
+| `Color GetColor() const` | Named `GetColor`, not `Color`, so the method doesn't share its name with the raylib `Color` type it returns — legal C++ either way, but a needless hazard given every other accessor in this doc uses the bare noun (`Position()`, `Radius()`, `Health()`) |
 | `int Health() const` | |
 | `int MaxHealth() const` | |
 | `float HealthFraction() const` | `Health() / (float)MaxHealth()`, always in `[0,1]` since health is pre-clamped — feeds `CHealthBar` and could feed future HUD/UI needs |
@@ -358,9 +383,9 @@ the two subclasses and belong in them.
 | `void Tick(float dt)` | Forwards to `m_weapon.Tick(dt)` (§5 step 3). Called externally by `CWorld::TickTimers` on the player and each enemy, so `CWorld` never has to reach into a character's weapon directly |
 | `void SetPosition(Vector2 p)` | Public mutator — needed by `CWorld::ResolvePushApart` (which reads/writes positions around the decoupled `CCollision::ResolveCircleOverlap`) and `CPlayer::ResetToSpawn` |
 | `protected: void SetFacingRad(float radians)` | Normalizes the angle and stores it in `m_facingRad`. Shared by `CPlayer::AimAt` and `CEnemy::UpdateFacing` so the angle-wrapping math (needed for "shorter path, no overshoot") is written once, not duplicated in both subclasses |
-| `void Draw() const` | Body + gun rectangle toward facing + two eye dots, per §3.1/§3.2. `CPlayer` and `CEnemy` override to add/omit the health bar |
+| `virtual void Draw() const` | Body + gun rectangle toward facing + two eye dots, per §3.1/§3.2. Must be `virtual` — `CPlayer` overrides it to add the health bar; `CEnemy` doesn't override it at all (no health bar to add, per §3.2), it just inherits the base behavior unchanged |
 | `void TakeDamage(int amount)` | Subtracts, clamps `m_health` to `[0, m_maxHealth]` immediately (§5 step 11) |
-| `void MoveWithSlide(Vector2 delta, const std::vector<CObstacle>& obstacles)` | Axis-separated slide from §5 ("How movement interacts with obstacles") |
+| `void MoveWithSlide(const std::vector<CObstacle>& obstacles)` | Applies the axis-separated slide (§5 "How movement interacts with obstacles") using `m_pendingMove`, then resets `m_pendingMove` to `{0, 0}` so a stray second call can't reapply it. No `delta` parameter — the displacement was already written into `m_pendingMove` at step 4 |
 | `void ClampToArena(const CArena& arena)` | `m_position = arena.ClampCircle(m_position, m_radius)` |
 | `std::optional<CProjectile> TryFire(bool wantsToFire)` | `wantsToFire` is the caller-specific gate (player: button held; enemy: LOS + facing tolerance, computed by the subclass). Internally: if `wantsToFire && m_weapon.CanFire()`, consume the shot and spawn a projectile at `m_position + FacingDir() * m_radius`, else return empty |
 | `protected: CCharacter(Vector2 position, float radius, Color color, int maxHealth, float moveSpeed, CWeapon weapon)` | Shared constructor for subclasses |
@@ -379,16 +404,16 @@ the two subclasses and belong in them.
 | Signature | Notes |
 |---|---|
 | `CPlayer(Vector2 spawn)` | Constructs base with Uzi spec, blue color, spawn position |
-| `void Update(float dt, const CInputState& input, const std::vector<CObstacle>& obstacles)` | R → `StartReload()`; WSAD → movement intent (handled by `CWorld` calling `MoveWithSlide`); mouse → `AimAt(input.m_mousePos)` |
+| `void ApplyMoveInput(Vector2 moveDir, float dt)` | §5 step 4 — sets `m_pendingMove = moveDir * m_moveSpeed * dt`, using the inherited `m_moveSpeed` (not `Config::MoveSpeed` directly — the constant is what both constructors get *seeded* with, per §7 below, but once constructed, the object's own stored value is the single source of truth `ApplyMoveInput` and `ChooseSteering` both read). Called directly by `CWorld::UpdateSteeringAndInput`. No bundled per-frame `Update()` exists on `CPlayer` at all: §5 requires steering (step 4), sliding (step 5), and facing (step 8) as three separate passes *over every entity*, interleaved with obstacle/collision resolution in between — a single per-character `Update()` that did all three itself would update facing right after steering, skipping the intervening slide/clamp/push-apart for that character. So `CWorld` calls this, `MoveWithSlide` (inherited, step 5), and `AimAt` (step 8) separately, each at its own step, on every character in lockstep |
 | `void ResetToSpawn()` | `SetPosition(m_spawnPoint)`, `m_health = m_maxHealth`, rebuilds `m_weapon` fresh (full mag, reload cancelled). Takes no parameters — the player's spawn point is a fixed, deterministic formula (not randomized, §3.1), so it's computed once via `CSpawnLayout::PlayerSpawn` and cached in `m_spawnPoint` at construction rather than recomputed on every reset |
-| `bool StartReload()` | Delegates to `m_weapon.StartReload()`; no-op if already reloading (§3.1) |
+| `bool StartReload()` | Delegates to `m_weapon.StartReload()`; no-op if already reloading (§3.1). Called directly by `CWorld::UpdateSteeringAndInput` when `input.m_reloadPressed` |
 | `bool IsReloading() const` | Delegates |
 | `int AmmoInMag() const` | Delegates |
 | `int MagazineSize() const` | Delegates — HUD's `Ammo: {current}/{magazineSize}` |
 | `float ReloadTimeLeft() const` | Delegates — HUD's `Reloading {remaining:.1f}s` |
 | `Faction GetFaction() const override` | Returns `Player` |
-| `void Draw() const override` | Base `Draw()` + `m_healthBar.Draw(Position() + offset, HealthFraction())` |
-| `private: void AimAt(Vector2 mousePos)` | Instant facing snap toward the cursor, no turn-rate limit (unlike `CEnemy`) — computes the angle and stores it via the base's `SetFacingRad` |
+| `void Draw() const override` | Base `Draw()` + `m_healthBar.Draw(Position(), HealthFraction())` — passes the raw position; `CHealthBar::Draw` applies its own `m_offset` internally (see §9) |
+| `void AimAt(Vector2 mousePos)` | §5 step 8 — instant facing snap toward the cursor, no turn-rate limit (unlike `CEnemy`); computes the angle and stores it via the base's `SetFacingRad`. **Public**, not private — `CWorld::UpdateFacing` calls it directly, the same way it calls `MoveWithSlide`/`ClampToArena`/`TryFire` on every character |
 
 ### CEnemy : CCharacter
 
@@ -398,19 +423,17 @@ the two subclasses and belong in them.
 |---|---|---|
 | `m_turnRate` | `float` | 180°/s (§7) |
 | `m_aimTolerance` | `float` | 5° (§7) |
-| `m_hasLineOfSight` | `bool` | Computed once per frame in `Update`, cached so the firing gate can reuse it instead of re-testing (§3.2, §5 step 9) |
 
 **Methods**
 
 | Signature | Notes |
 |---|---|
 | `CEnemy(Vector2 spawn, Color color)` | Constructs base with Pistol spec; `m_facingRad` initialized to straight-down, per §3.2 |
-| `void Update(float dt, Vector2 playerPos, const std::vector<CObstacle>& obstacles)` | Runs `ChooseSteering` then `UpdateFacing`; updates `m_hasLineOfSight` |
-| `bool HasLineOfSight() const` | Cached result from the last `Update` |
+| `void ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obstacles, float dt)` | §5 step 4 — tests LOS via `HasLineOfSight(playerPos, obstacles)`; steers toward the player directly if clear, else toward the nearest corner of the blocking obstacle (§3.2), in both cases writing `m_pendingMove = direction * m_moveSpeed * dt` (the same inherited `m_moveSpeed` `CPlayer::ApplyMoveInput` uses). Needs `dt` for exactly the reason `ApplyMoveInput` does — `m_pendingMove` is a displacement, not a direction, and nothing else scales it by frame time before `MoveWithSlide` (step 5) consumes it. Writing `m_pendingMove` as a side effect is also why this can't be `const`, and why it's `void` rather than returning the displacement. **Public**, not private, for the same reason as `CPlayer::ApplyMoveInput` — no bundled `CEnemy::Update()` exists; `CWorld::UpdateSteeringAndInput` calls this directly on every enemy at step 4 |
+| `bool HasLineOfSight(Vector2 playerPos, const std::vector<CObstacle>& obstacles) const` | Segment-vs-every-obstacle test, freshly computed on every call — **not cached**. `GAME_DESIGN.md` §3.2's firing condition (a) says the LOS segment is "currently unobstructed", and between step 4 (where this is first tested, for steering) and step 9 (where `CWorld::ResolveFiring` tests it again, for the firing gate) both this enemy and the player have moved — a cached step-4 result would be stale by step 9. So `ChooseSteering` calls this fresh at step 4, and `ResolveFiring` calls it fresh again at step 9 with the post-movement positions; there's no `m_hasLineOfSight` member to go stale between them. The test itself is cheap (one segment against ~8 obstacles), so recomputing it twice a frame costs nothing worth caching for |
 | `bool IsAimedAtPlayer(Vector2 playerPos) const` | True if `FacingDir()` is within `m_aimTolerance` of the direction to `playerPos` — the third firing condition in §3.2's Combat paragraph |
 | `Faction GetFaction() const override` | Returns `Enemy` |
-| `private: Vector2 ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obstacles) const` | Direct-approach if LOS is clear; else nearest-corner-of-blocking-obstacle, per §3.2 |
-| `private: void UpdateFacing(float dt, Vector2 playerPos)` | Rotates toward the player by at most `m_turnRate × dt`, shorter angular path, no overshoot — stores the result via the base's `SetFacingRad` |
+| `void UpdateFacing(float dt, Vector2 playerPos)` | §5 step 8 — rotates toward the player by at most `m_turnRate × dt`, shorter angular path, no overshoot — stores the result via the base's `SetFacingRad`. **Public** — `CWorld::UpdateFacing` calls this directly on every enemy, the same step it calls `CPlayer::AimAt` |
 
 ### CWeapon
 
@@ -519,7 +542,7 @@ beyond what it's handed.
 
 | Signature | Notes |
 |---|---|
-| `void Draw(Vector2 ownerPosition, float healthFraction) const` | Background rect + fill rect scaled by `healthFraction`, always axis-aligned |
+| `void Draw(Vector2 ownerPosition, float healthFraction) const` | Draws at `ownerPosition + m_offset` — the caller passes the raw owner position, not a pre-offset draw position; `m_offset` is applied here, internally, since it's this class's own member. Background rect + fill rect scaled by `healthFraction`, always axis-aligned |
 
 ### CHud
 
@@ -577,8 +600,8 @@ button is present (Paused has none).
 | Signature | Notes |
 |---|---|
 | `CButton(Rectangle rect, std::string label)` | |
-| `bool IsHovered(Vector2 mousePos) const` | |
 | `bool WasClicked(Vector2 mousePos, bool clicked) const` | `IsHovered(mousePos) && clicked` |
+| `private: bool IsHovered(Vector2 mousePos) const` | Its only consumer is `WasClicked`, internally. `GAME_DESIGN.md` never specifies a hover highlight, so there's no second caller pulling this public — if one gets added later (`Draw()` taking a mouse position to highlight on hover), it can be made public again then |
 | `void Draw() const` | |
 
 ---
@@ -598,7 +621,7 @@ or duplicating segment/circle tests inside both `CCharacter` and `CWorld`.
 | `static bool CircleVsRect(Vector2 center, float radius, Rectangle rect)` | |
 | `static bool SegmentVsRect(Vector2 a, Vector2 b, Rectangle rect)` | |
 | `static bool CircleVsCircle(Vector2 a, float ra, Vector2 b, float rb)` | |
-| `static Vector2 NearestPointOnRect(Vector2 point, Rectangle rect)` | Closest point on/in the rectangle to an arbitrary point. `CObstacle::NearestPoint`/`DistanceTo` delegate here |
+| `static Vector2 NearestPointOnRect(Vector2 point, Rectangle rect)` | Closest point on/in the rectangle to an arbitrary point. `CObstacle::DistanceTo` delegates here |
 | `static Vector2 NearestCornerOfRect(Vector2 point, Rectangle rect)` | Nearest of the rectangle's four corner vertices. `CObstacle::NearestCorner` delegates here |
 | `static float RectGap(Rectangle a, Rectangle b)` | Combined horizontal/vertical gap between two rectangles: `sqrt(hGap² + vGap²)`. `CObstacle::GapTo` delegates here |
 | `static void ResolveCircleOverlap(Vector2& posA, float radiusA, Vector2& posB, float radiusB)` | Splits any overlap between the two circles evenly along the line between their centers (§5 "push-apart"). Takes raw position/radius by reference rather than `CCharacter&`, so `CCollision` has no dependency on the character hierarchy at all — `CWorld::ResolvePushApart` is what bridges the two, reading `Position()`/`Radius()` in and calling `SetPosition()` back out |
@@ -661,7 +684,7 @@ class COverlayScreen {
 class CButton {
   -Rectangle m_rect
   -string m_label
-  +IsHovered(Vector2 mouse) const bool
+  -IsHovered(Vector2 mouse) const bool
   +WasClicked(Vector2 mouse, bool clicked) const bool
   +Draw() const
 }
@@ -688,7 +711,7 @@ class CWorld {
   -ResolveObstacleSliding()
   -ClampToArenaBounds()
   -ResolvePushApart()
-  -UpdateFacing(float dt)
+  -UpdateFacing(float dt, CInputState in)
   -ResolveFiring(CInputState in)
   -UpdateProjectiles(float dt)
   -ResolveProjectileCollisions()
@@ -702,7 +725,6 @@ class CArena {
   +CArena(int screenWidth, int screenHeight, float margin)
   +Bounds() const Rectangle
   +ClampCircle(Vector2 pos, float r) const Vector2
-  +Contains(Vector2 p) const bool
   +CircleExitsBounds(Vector2 pos, float r) const bool
   +Draw() const
 }
@@ -712,7 +734,6 @@ class CObstacle {
   +Rect() const Rectangle
   +BlocksCircle(Vector2 c, float r) const bool
   +BlocksSegment(Vector2 a, Vector2 b) const bool
-  +NearestPoint(Vector2 from) const Vector2
   +NearestCorner(Vector2 from) const Vector2
   +DistanceTo(Vector2 p) const float
   +GapTo(CObstacle o) const float
@@ -783,10 +804,11 @@ class CCharacter {
   #float m_facingRad
   #float m_moveSpeed
   #CWeapon m_weapon
+  #Vector2 m_pendingMove
   +GetFaction()* Faction
   +Position() const Vector2
   +Radius() const float
-  +Color() const Color
+  +GetColor() const Color
   +Health() const int
   +MaxHealth() const int
   +HealthFraction() const float
@@ -798,7 +820,7 @@ class CCharacter {
   #SetFacingRad(float radians)
   +Draw() const
   +TakeDamage(int amount)
-  +MoveWithSlide(Vector2 delta, vector~CObstacle~ obs)
+  +MoveWithSlide(vector~CObstacle~ obs)
   +ClampToArena(CArena a)
   +TryFire(bool wantsToFire) optional~CProjectile~
 }
@@ -806,7 +828,8 @@ class CPlayer {
   -Vector2 m_spawnPoint
   -CHealthBar m_healthBar
   +CPlayer(Vector2 spawn)
-  +Update(float dt, CInputState in, vector~CObstacle~ obs)
+  +ApplyMoveInput(Vector2 moveDir, float dt)
+  +AimAt(Vector2 mousePos)
   +ResetToSpawn()
   +StartReload() bool
   +IsReloading() const bool
@@ -815,19 +838,16 @@ class CPlayer {
   +ReloadTimeLeft() const float
   +GetFaction() const Faction
   +Draw() const
-  -AimAt(Vector2 mousePos)
 }
 class CEnemy {
   -float m_turnRate
   -float m_aimTolerance
-  -bool m_hasLineOfSight
   +CEnemy(Vector2 spawn, Color c)
-  +Update(float dt, Vector2 playerPos, vector~CObstacle~ obs)
-  +HasLineOfSight() const bool
+  +ChooseSteering(Vector2 playerPos, vector~CObstacle~ obs, float dt)
+  +UpdateFacing(float dt, Vector2 playerPos)
+  +HasLineOfSight(Vector2 playerPos, vector~CObstacle~ obs) const bool
   +IsAimedAtPlayer(Vector2 playerPos) const bool
   +GetFaction() const Faction
-  -ChooseSteering(Vector2 playerPos, vector~CObstacle~ obs) const Vector2
-  -UpdateFacing(float dt, Vector2 playerPos)
 }
 class CWeapon {
   -CWeaponSpec m_spec
@@ -909,7 +929,7 @@ CCharacter ..> Faction : GetFaction
 | 8. Facing update | `UpdateFacing` |
 | 9. Firing | `ResolveFiring` |
 | 10. Projectile movement | `UpdateProjectiles` |
-| 11. Projectile collisions | `ResolveProjectileCollisions` (calls `ReapDeadEnemies`, `SpawnEffect`) |
+| 11. Projectile collisions | `ResolveProjectileCollisions` (pushes `CEffect::Hit(...)`/`CEffect::Death(...)` directly, calls `ReapDeadEnemies`) |
 | 12. Win/loss check | (done by `Game`, using `PlayerIsDead()`/`AllEnemiesDead()` after `CWorld::Update` returns) |
 
 `RemoveExpiredProjectiles`/`RemoveExpiredEffects` aren't numbered steps in
@@ -977,6 +997,61 @@ want changed before this goes to an implementation pass:
     another instance — everything else is either inside a `std::vector`
     (never needs default construction), or already receives a real value
     through a constructor parameter at the point it's constructed.
+12. **Bundled `CPlayer::Update`/`CEnemy::Update` removed (this round's fix):**
+    §5 requires steering (step 4), obstacle/collision resolution (steps
+    5–7), and facing (step 8) as three separate passes over *every* entity,
+    not three things done to one entity in a row — so a single per-character
+    `Update()` was structurally incompatible with `CWorld`'s step-by-step
+    orchestration, and worse, its logic (`ChooseSteering`, `AimAt`,
+    `UpdateFacing`) was `private`, unreachable from `CWorld` at all. Fixed
+    by removing both bundled methods and making the per-step operations
+    public, callable directly by `CWorld` at the right step: `CPlayer` gets
+    `ApplyMoveInput` (step 4) and a now-public `AimAt` (step 8); `CEnemy`
+    gets a now-public, non-`const`, `void`-returning `ChooseSteering` (step
+    4 — it writes `m_pendingMove` as a side effect, which is also why it
+    couldn't stay `const`) and a now-public `UpdateFacing` (step 8). The
+    step-4/step-5 handoff needed somewhere to live, so `CCharacter` gained
+    a `m_pendingMove` member that step 4 writes
+    and `MoveWithSlide` (step 5) consumes and clears.
+13. **`CHealthBar` applies its own offset (this round's fix):** `CPlayer::Draw`
+    previously referenced `Position() + offset` — `offset` wasn't an
+    identifier that existed anywhere. Fixed by having `CHealthBar::Draw`
+    take the raw `ownerPosition` and apply its own `m_offset` internally;
+    `CPlayer::Draw` now just passes `Position()`.
+14. **`CButton::IsHovered` made private (this round's fix):** its only
+    consumer was `WasClicked`, internally, and `GAME_DESIGN.md` never
+    specifies a hover highlight that would need a second, external caller.
+15. **Enemy line-of-sight is no longer cached (this round's fix):**
+    `CEnemy::m_hasLineOfSight` was written once at step 4 (`ChooseSteering`)
+    and read at step 9 (`ResolveFiring`) — but both the enemy and the
+    player move in between (steps 5–8), so the cached value could be stale
+    by the time it gated firing. `GAME_DESIGN.md` §3.2's firing condition
+    (a) says the segment is "currently unobstructed", which reads as a
+    check at the moment of firing, not a carried-over one. Fixed by
+    removing the cache: `HasLineOfSight(playerPos, obstacles)` is now a
+    plain, parameterized, always-fresh test, called separately (and
+    potentially with different results) by `ChooseSteering` at step 4 and
+    `ResolveFiring` at step 9.
+16. **`MainMenu` draws no world/HUD backdrop at all (revised this round):**
+    an earlier draft had `Game::Draw` treat `MainMenu` the same as
+    `Paused`/`GameOver`/`Win` (always draw `m_world` + `m_hud` first), which
+    was never something `GAME_DESIGN.md` §1 asked for — it describes
+    MainMenu as just "centered title text + a clickable Start button," with
+    no backdrop, unlike the other three states, which explicitly call for
+    one. That unflagged assumption also produced a real bug: `Game::Init()`
+    had to force an early `m_world.Reset()` just to keep the very first
+    MainMenu from showing an empty arena, and even then, `ReturnToMenu()`
+    (never calls `Reset()`) meant an Esc-to-MainMenu mid-game would still
+    show that abandoned game's leftover battlefield — contradicting the
+    "every MainMenu looks the same" reasoning that early `Reset()` was
+    supposed to buy. Fixed by having `MainMenu` draw only its own overlay
+    screen, matching the spec, and removing the now-unnecessary early
+    `Reset()` call from `Init()`.
+17. **`ResolvePushApart`'s wording clarified:** "every player/enemy circle
+    pair" was ambiguous about whether it included enemy-vs-enemy pairs.
+    `GAME_DESIGN.md`'s §5 summary table requires both player-vs-enemy and
+    enemy-vs-enemy push-apart; the method description (§5) now says so
+    explicitly.
 
 ---
 
