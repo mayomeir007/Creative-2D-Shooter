@@ -165,6 +165,15 @@ void CWorld::ResolvePushApart()
     }
   }
 
+  // The circle-vs-circle push above can shove a character into an obstacle
+  // it wasn't touching before (e.g. one character pushed against a wall by
+  // another). Push back out so nobody ends up stuck inside geometry.
+  m_player.PushOutOfObstacles(m_obstacles);
+  for (CEnemy& enemy : m_enemies)
+  {
+    enemy.PushOutOfObstacles(m_obstacles);
+  }
+
   ClampToArenaBounds();
 }
 

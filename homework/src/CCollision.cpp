@@ -1,4 +1,5 @@
 #include "CCollision.hpp"
+#include <algorithm>
 #include <cmath>
 #include "raymath.h"
 
@@ -94,4 +95,35 @@ void CCollision::ResolveCircleOverlap(Vector2& posA, float radiusA, Vector2& pos
   const Vector2 correction = Vector2Scale(normal, overlap * 0.5f);
   posA = Vector2Subtract(posA, correction);
   posB = Vector2Add(posB, correction);
+}
+
+void CCollision::ResolveCircleRectOverlap(Vector2& pos, float radius, Rectangle rect)
+{
+  const Vector2 nearest = NearestPointOnRect(pos, rect);
+  const Vector2 delta = Vector2Subtract(pos, nearest);
+  const float dist = Vector2Length(delta);
+
+  if (dist > 0.0f)
+  {
+    // Center is outside the rect; push out along the vector to the nearest
+    // edge point if the circle still overlaps it.
+    if (dist < radius)
+    {
+      pos = Vector2Add(nearest, Vector2Scale(delta, radius / dist));
+    }
+    return;
+  }
+
+  // Center is inside (or exactly on the edge of) the rect: push out along
+  // whichever side requires the least movement.
+  const float left = pos.x - rect.x;
+  const float right = (rect.x + rect.width) - pos.x;
+  const float top = pos.y - rect.y;
+  const float bottom = (rect.y + rect.height) - pos.y;
+  const float minPenetration = std::min({left, right, top, bottom});
+
+  if (minPenetration == left) pos.x = rect.x - radius;
+  else if (minPenetration == right) pos.x = rect.x + rect.width + radius;
+  else if (minPenetration == top) pos.y = rect.y - radius;
+  else pos.y = rect.y + rect.height + radius;
 }

@@ -34,6 +34,7 @@ public:
   virtual void Draw() const;
   void TakeDamage(int amount);
   void MoveWithSlide(const std::vector<CObstacle>& obstacles);
+  void PushOutOfObstacles(const std::vector<CObstacle>& obstacles);
   void ClampToArena(const CArena& arena);
   std::optional<CProjectile> TryFire(bool wantsToFire);
 

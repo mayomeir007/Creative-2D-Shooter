@@ -12,4 +12,5 @@ public:
   static Vector2 NearestCornerOfRect(Vector2 point, Rectangle rect);
   static float RectGap(Rectangle a, Rectangle b);
   static void ResolveCircleOverlap(Vector2& posA, float radiusA, Vector2& posB, float radiusB);
+  static void ResolveCircleRectOverlap(Vector2& pos, float radius, Rectangle rect);
 };

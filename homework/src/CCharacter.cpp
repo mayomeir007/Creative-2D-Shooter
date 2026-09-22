@@ -3,6 +3,7 @@
 #include <cmath>
 #include "raymath.h"
 #include "CArena.hpp"
+#include "CCollision.hpp"
 #include "CObstacle.hpp"
 #include "Config.hpp"
 
@@ -120,6 +121,17 @@ void CCharacter::MoveWithSlide(const std::vector<CObstacle>& obstacles)
   }
 
   m_pendingMove = {0, 0};
+}
+
+void CCharacter::PushOutOfObstacles(const std::vector<CObstacle>& obstacles)
+{
+  for (const CObstacle& obstacle : obstacles)
+  {
+    if (obstacle.BlocksCircle(m_position, m_radius))
+    {
+      CCollision::ResolveCircleRectOverlap(m_position, m_radius, obstacle.Rect());
+    }
+  }
 }
 
 void CCharacter::ClampToArena(const CArena& arena)
