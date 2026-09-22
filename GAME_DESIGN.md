@@ -39,10 +39,9 @@ Five states, owned by `Game`:
 quits the application immediately, no confirmation. From **any other
 state** — Playing, Paused, GameOver, or Win — Esc immediately returns to
 MainMenu instead, abandoning whatever game is in progress (no Win/Loss is
-recorded for it; this doesn't touch score either way, since score only ever
-changes on kills, never on how a game ends). To actually close the
-application from inside a game, Esc backs out to MainMenu first, then Esc
-again quits. There is no separate "return to menu" keybind — Esc is
+recorded for it, and score is reset to 0 — see "Score lifetime" below). To
+actually close the application from inside a game, Esc backs out to MainMenu
+first, then Esc again quits. There is no separate "return to menu" keybind — Esc is
 overloaded to serve both purposes depending on state.
 
 **Implementation note:** raylib defaults `KEY_ESCAPE` as the built-in
@@ -75,10 +74,23 @@ are torn down and rebuilt fresh:
   using the same fixed obstacle count.
 - **Projectiles** — anything in flight is cleared immediately.
 
-**Score is the one exception: it is not reset by Start.** It persists and
-keeps accumulating across every game played in the same run of the
-application, and only returns to 0 when the application itself is
-relaunched.
+**Score is handled separately** — pressing Start does not rebuild it. Its
+lifetime follows the rules below.
+
+### Score lifetime
+
+Score is `+1` per enemy killed (§6) and starts at 0 when the application
+launches.
+
+- **Reset to 0 on a loss.** When the player dies (GameOver), the final score
+  stays visible on the GameOver screen as-is; it is zeroed the moment the
+  player leaves that screen, whether by Start or by Esc. So the next game
+  after a loss always begins at 0.
+- **Reset to 0 on entering MainMenu**, from any state (Playing, Paused,
+  GameOver, Win) via Esc. So Start pressed from MainMenu always begins at 0.
+- **Not reset on a win.** Pressing Start from the Win screen keeps the
+  current score, so score accumulates across consecutive wins until the
+  player either loses or returns to MainMenu.
 
 ---
 
@@ -103,6 +115,7 @@ relaunched.
 | Property | Value |
 |---|---|
 | Shape | Circle, radius `32px` |
+| Color | Blue, RGB `(77, 171, 247)` — same blue as the sample circle in the starter `Guide.hpp` |
 | Start position | Bottom-middle of arena, flush against the bottom boundary: `(width/2, height - M - radius)` |
 | Move speed | `260 px/s` (see [movement rules](#movement-rules)) |
 | Facing | Always toward current mouse cursor position |
@@ -146,7 +159,7 @@ runs — so the bar's fill fraction is always a valid, non-negative value.
 | Property | Value |
 |---|---|
 | Shape | Circle, radius `32px` (same as player) |
-| Color | Cosmetic only — arbitrary/randomized per enemy, no gameplay meaning |
+| Color | Cosmetic only, no gameplay meaning — randomly generated per enemy, independently, so it works for any enemy count (no fixed palette). Each color is a random hue in `[0°, 360°)` at fixed saturation `0.55` and brightness `1.0` (bright pastels, readable on the dark background), **excluding hues within ±30° of the player's blue** (hue ≈ 207°, so `[177°, 237°]` is rejected and re-rolled) so no enemy can be mistaken for the player |
 | Move speed | `260 px/s` (same as player, per spec) |
 | Max health | `6`, same damage-per-hit rules as player |
 | Weapon | Its own distinct weapon definition, `Pistol`, separate from the player's Uzi — see §4 |
@@ -167,11 +180,13 @@ direction-to-player at a limited angular speed of **180°/second** — a full
 360° rotation takes **2.0 seconds**. It always turns via the shorter angular
 path toward that target and never overshoots past it. Every enemy's facing
 is initialized to point straight down (toward the bottom of the screen) at
-spawn, regardless of where it actually sits relative to the player — for
-enemies on the top edge, straight-down happens to already be close to the
-correct direction; for enemies on the left/right edges it can be off by up
-to ~90°, so those enemies visibly turn to acquire the player over roughly
-the first half-second or so of a match. The facing target is always the
+spawn, regardless of where it actually sits relative to the player. With
+the player spawning at bottom-middle and `N=5`, the initial error works out
+to: 0° for the enemy directly above the player, about 31° for the next two
+along the top edge, and about 51° for the two on the side edges (which
+spawn at y=264, i.e. 900px to the side and 724px above the player). So the
+worst-case initial turn is roughly 51°, which takes about 0.3s at the turn
+rate below. The facing target is always the
 straight-line direction to the player, regardless of whether that line is
 currently obstructed — an enemy keeps turning to (eventually) face the
 player even while its corner-seek movement (below) is carrying it a
@@ -500,7 +515,7 @@ obstacle's corner, that's an accepted minor edge case for this scope (see
 | Projectile ↔ Arena bounds | Projectile destroyed |
 | Player projectile ↔ Enemy circle | Enemy takes damage, projectile destroyed |
 | Enemy projectile ↔ Player circle | Player takes damage, projectile destroyed |
-| Enemy projectile ↔ another Enemy circle | That enemy takes damage (friendly fire), projectile destroyed |
+| Enemy projectile ↔ another Enemy circle | That enemy takes damage (friendly fire), projectile destroyed; if it dies, the player still scores the kill (§6) |
 | Player circle ↔ Enemy circle | Push-apart (above), no damage from contact |
 | Enemy circle ↔ Enemy circle | Push-apart (above) |
 | Enemy-to-player line of sight ↔ Obstacle rect | Segment intersection test; blocks both enemy firing and enemy's "direct approach" movement mode |
@@ -539,7 +554,9 @@ loaded at startup, falling back to raylib's built-in default font if that
 file isn't available on the machine). No new font asset is introduced —
 one consistent typeface is used everywhere text appears in the game.
 
-**Score rule:** `+1` per enemy killed. Exposed as a named constant.
+**Score rule:** `+1` for every enemy that dies, **regardless of whose shot
+killed it** — including an enemy killed by another enemy's stray shot
+(friendly fire, §3.3). Exposed as a named constant.
 
 ---
 
@@ -591,8 +608,10 @@ default. Flag anything you want changed:
    unlikely, given the clearance radius and count) for random placement to
    make an enemy's path awkward, but there's no maze-connectivity check.
    Considered acceptable for this scope.
-6. **Enemy colors are cosmetic/random** with no gameplay meaning (matches
-   the varied colors in the reference screenshot).
+6. **Enemy colors are cosmetic/random** with no gameplay meaning, generated
+   by the hue rule in §3.2 (the saturation/brightness values and the ±30°
+   exclusion band are my choices, not from the requester). The exact colors of projectiles, guns, eyes, obstacles, and the health bar
+   are not pinned down in this spec.
 7. **Push-apart is not re-validated against obstacles afterward** — see the
    note at the end of §5. A rare, accepted edge case.
 8. **Enemies can stall against the arena boundary while rounding an obstacle
@@ -634,6 +653,7 @@ decisions already made with the requester:
 - **Hit/death effects will be a minimal placeholder** (brief flash/scale-down
   on hit or death) rather than a full particle system — confirmed acceptable
   scope.
-- **Score persists across games within one application run** (does not reset
-  on Start); everything else about the game state resets fresh — see "What a
-  new game resets" in §1.
+- **Score lifetime**: reset to 0 on a loss and whenever the game returns to
+  MainMenu; carried over on a win (accumulating across consecutive wins).
+  Everything else about the game state resets fresh on Start — see "What a
+  new game resets" and "Score lifetime" in §1.
