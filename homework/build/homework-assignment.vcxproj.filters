@@ -1,6 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CArena.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CCharacter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CCollision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CEnemy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CHealthBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CHud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CInputState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CObstacle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CObstacleGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\COverlayScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CProjectile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CSpawnLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWeapon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWeaponSpec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWorld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -9,19 +63,85 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CArena.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CButton.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CCharacter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CCollision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CEffect.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CEnemy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CHealthBar.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CHud.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CInputState.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CObstacle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CObstacleGenerator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\COverlayScreen.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CPlayer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CProjectile.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CSpawnLayout.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWeapon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWeaponSpec.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\CWorld.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Faction.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Game.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\GameState.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\src\Guide.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <CustomBuild Include="C:\Users\meirb\Downloads\Creative2DShooter\HomeworkAssignmentDist\homework\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{CF70AAF7-EB7B-31B6-A9A8-CDE70B4D5359}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{990AFD53-448D-3B1F-AD18-11A0256617DF}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\Game.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Guide.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

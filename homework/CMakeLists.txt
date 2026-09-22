@@ -15,8 +15,11 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../external/raylib ${CMAKE_CURRENT_
 file(GLOB_RECURSE HOMEWORK_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
+file(GLOB_RECURSE HOMEWORK_HEADERS CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
+)
 
-add_executable(homework-assignment ${HOMEWORK_SOURCES})
+add_executable(homework-assignment ${HOMEWORK_SOURCES} ${HOMEWORK_HEADERS})
 
 target_link_libraries(homework-assignment PRIVATE raylib)
 

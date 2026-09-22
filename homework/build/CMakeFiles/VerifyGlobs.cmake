@@ -5,8 +5,58 @@ cmake_policy(SET CMP0009 NEW)
 # HOMEWORK_SOURCES at CMakeLists.txt:15 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/*.cpp")
 set(OLD_GLOB
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CArena.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CButton.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CCharacter.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CCollision.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CEffect.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CEnemy.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CHealthBar.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CHud.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CInputState.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CObstacle.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CObstacleGenerator.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/COverlayScreen.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CPlayer.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CProjectile.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CSpawnLayout.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWeapon.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWeaponSpec.cpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWorld.cpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Game.cpp"
   "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/main.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/build/CMakeFiles/cmake.verify_globs")
+endif()
+
+# HOMEWORK_HEADERS at CMakeLists.txt:18 (file)
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/*.hpp")
+set(OLD_GLOB
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CArena.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CButton.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CCharacter.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CCollision.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CEffect.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CEnemy.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CHealthBar.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CHud.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CInputState.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CObstacle.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CObstacleGenerator.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/COverlayScreen.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CPlayer.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CProjectile.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CSpawnLayout.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWeapon.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWeaponSpec.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/CWorld.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Config.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Faction.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Game.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/GameState.hpp"
+  "C:/Users/meirb/Downloads/Creative2DShooter/HomeworkAssignmentDist/homework/src/Guide.hpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
