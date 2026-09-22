@@ -1,4 +1,6 @@
 #include "CArena.hpp"
+#include "raymath.h"
+#include "Config.hpp"
 
 CArena::CArena(int screenWidth, int screenHeight, float margin)
     : m_bounds{margin, margin, static_cast<float>(screenWidth) - 2 * margin,
@@ -14,17 +16,16 @@ Rectangle CArena::Bounds() const
 
 Vector2 CArena::ClampCircle(Vector2 pos, float radius) const
 {
-  // TODO: Clamp pos to [M+r, size-M-r] on each axis.
-  return pos;
+  return Vector2Clamp(pos, {m_bounds.x + radius, m_bounds.y + radius},
+                       {m_bounds.x + m_bounds.width - radius, m_bounds.y + m_bounds.height - radius});
 }
 
 bool CArena::CircleExitsBounds(Vector2 pos, float radius) const
 {
-  // TODO: !Vector2Equals(ClampCircle(pos, radius), pos)
-  return false;
+  return !Vector2Equals(ClampCircle(pos, radius), pos);
 }
 
 void CArena::Draw() const
 {
-  // TODO: Draw a thin border outline at m_bounds.
+  DrawRectangleLinesEx(m_bounds, 2.0f, Config::ArenaOutlineColor);
 }

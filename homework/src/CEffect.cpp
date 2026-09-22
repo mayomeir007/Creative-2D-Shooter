@@ -1,4 +1,5 @@
 #include "CEffect.hpp"
+#include "raymath.h"
 #include "Config.hpp"
 
 CEffect::CEffect(Vector2 position, float radius, Color color, float duration, bool isDeath)
@@ -18,16 +19,30 @@ CEffect CEffect::Death(Vector2 position, float radius, Color color)
 
 void CEffect::Update(float dt)
 {
-  // TODO: Advance m_age.
+  m_age += dt;
 }
 
 bool CEffect::IsExpired() const
 {
-  // TODO: m_age >= m_duration
-  return false;
+  return m_age >= m_duration;
 }
 
 void CEffect::Draw() const
 {
-  // TODO: Flash (Hit) or shrinking circle (Death), based on m_isDeath.
+  const float t = m_duration > 0.0f ? Clamp(m_age / m_duration, 0.0f, 1.0f) : 1.0f;
+
+  if (m_isDeath)
+  {
+    const float radius = m_radius * (1.0f - t);
+    if (radius > 0.0f)
+    {
+      DrawCircleV(m_position, radius, m_color);
+    }
+  }
+  else
+  {
+    Color flashColor = m_color;
+    flashColor.a = static_cast<unsigned char>(255.0f * (1.0f - t));
+    DrawCircleV(m_position, Config::CharacterRadius * 0.5f, flashColor);
+  }
 }

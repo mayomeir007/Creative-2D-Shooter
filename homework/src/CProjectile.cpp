@@ -1,4 +1,5 @@
 #include "CProjectile.hpp"
+#include "raymath.h"
 #include "Config.hpp"
 
 CProjectile::CProjectile(Vector2 position, Vector2 direction, float speed, int damage, Faction owner)
@@ -12,12 +13,13 @@ CProjectile::CProjectile(Vector2 position, Vector2 direction, float speed, int d
 
 void CProjectile::Update(float dt)
 {
-  // TODO: m_position += m_velocity * dt
+  m_position = Vector2Add(m_position, Vector2Scale(m_velocity, dt));
 }
 
 void CProjectile::Draw() const
 {
-  // TODO: Fixed color per faction.
+  const Color color = (m_owner == Faction::Player) ? Config::PlayerProjectileColor : Config::EnemyProjectileColor;
+  DrawCircleV(m_position, m_radius, color);
 }
 
 void CProjectile::Kill()

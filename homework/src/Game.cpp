@@ -1,15 +1,18 @@
 #include "Game.hpp"
 #include "Guide.hpp"
 #include "CInputState.hpp"
+#include "Config.hpp"
 
 void Game::Init(int screenWidth, int screenHeight, int targetFps)
 {
-  // TODO: m_world.Init(screenWidth, screenHeight); SetExitKey(KEY_NULL);
+  m_world.Init(screenWidth, screenHeight);
+  SetExitKey(KEY_NULL);
+  HomeworkGuide::InitializeFont();
 }
 
 void Game::Shutdown()
 {
-  // TODO: Clean up game resources and transient state.
+  HomeworkGuide::ShutdownFont();
 }
 
 void Game::Update(float deltaTime)
@@ -77,8 +80,6 @@ void Game::Draw(int screenWidth, int screenHeight) const
       m_winScreen.Draw(screenWidth, screenHeight);
       break;
   }
-
-  HomeworkGuide::DrawOverlay(screenWidth); // Comment this line out to hide the full starter guide.
 }
 
 bool Game::ShouldQuit() const
@@ -120,19 +121,29 @@ bool Game::HandleGlobalInput(const CInputState& input)
 
 void Game::UpdatePlaying(float dt, const CInputState& input)
 {
-  // TODO: m_world.Update(dt, input); fold m_world.ConsumeKills() into
-  // m_score; check m_world.PlayerIsDead()/AllEnemiesDead() and SetState
-  // accordingly.
+  m_world.Update(dt, input);
+  m_score += m_world.ConsumeKills() * Config::ScorePerKill;
+
+  if (m_world.PlayerIsDead())
+  {
+    SetState(GameState::GameOver);
+  }
+  else if (m_world.AllEnemiesDead())
+  {
+    SetState(GameState::Win);
+  }
 }
 
 void Game::StartNewGame()
 {
-  // TODO: m_world.Reset(); SetState(GameState::Playing). Does not touch score.
+  m_world.Reset();
+  SetState(GameState::Playing);
 }
 
 void Game::ReturnToMenu()
 {
-  // TODO: SetState(GameState::MainMenu); ResetScore().
+  SetState(GameState::MainMenu);
+  ResetScore();
 }
 
 void Game::ResetScore()

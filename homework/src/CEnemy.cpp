@@ -1,5 +1,8 @@
 #include "CEnemy.hpp"
+#include <cmath>
+#include "raymath.h"
 #include "Config.hpp"
+#include "CObstacle.hpp"
 #include "CWeaponSpec.hpp"
 
 CEnemy::CEnemy(Vector2 spawn, Color color)
@@ -13,20 +16,52 @@ CEnemy::CEnemy(Vector2 spawn, Color color)
 
 void CEnemy::ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obstacles, float dt)
 {
-  // TODO: LOS-gated steer toward the player, else toward the nearest corner
-  // of the blocking obstacle; write m_pendingMove = direction * m_moveSpeed * dt.
+  Vector2 target = playerPos;
+
+  if (!HasLineOfSight(playerPos, obstacles))
+  {
+    for (const CObstacle& obstacle : obstacles)
+    {
+      if (obstacle.BlocksSegment(m_position, playerPos))
+      {
+        target = obstacle.NearestCorner(m_position);
+        break;
+      }
+    }
+  }
+
+  const Vector2 toTarget = Vector2Subtract(target, m_position);
+  Vector2 direction{0, 0};
+  if (Vector2LengthSqr(toTarget) > 0.0f)
+  {
+    direction = Vector2Normalize(toTarget);
+  }
+
+  m_pendingMove = Vector2Scale(direction, m_moveSpeed * dt);
 }
 
 bool CEnemy::HasLineOfSight(Vector2 playerPos, const std::vector<CObstacle>& obstacles) const
 {
-  // TODO: Segment-vs-every-obstacle test, freshly computed on every call.
-  return false;
+  for (const CObstacle& obstacle : obstacles)
+  {
+    if (obstacle.BlocksSegment(m_position, playerPos))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool CEnemy::IsAimedAtPlayer(Vector2 playerPos) const
 {
-  // TODO: True if FacingDir() is within m_aimTolerance of the direction to playerPos.
-  return false;
+  const Vector2 toPlayer = Vector2Subtract(playerPos, m_position);
+  if (Vector2LengthSqr(toPlayer) <= 0.0f)
+  {
+    return true;
+  }
+
+  const float angleDiff = Vector2Angle(FacingDir(), Vector2Normalize(toPlayer));
+  return std::fabs(angleDiff) * RAD2DEG <= m_aimTolerance;
 }
 
 Faction CEnemy::GetFaction() const
@@ -36,6 +71,15 @@ Faction CEnemy::GetFaction() const
 
 void CEnemy::UpdateFacing(float dt, Vector2 playerPos)
 {
-  // TODO: Rotate toward the player by at most m_turnRate * dt, shorter
-  // angular path, no overshoot.
+  const Vector2 toPlayer = Vector2Subtract(playerPos, m_position);
+  if (Vector2LengthSqr(toPlayer) <= 0.0f)
+  {
+    return;
+  }
+
+  const Vector2 targetDir = Vector2Normalize(toPlayer);
+  const float angleDiff = Vector2Angle(FacingDir(), targetDir);
+  const float maxStep = (m_turnRate * DEG2RAD) * dt;
+  const float step = Clamp(angleDiff, -maxStep, maxStep);
+  SetFacingRad(m_facingRad + step);
 }

@@ -5,12 +5,6 @@
 #include "CHud.hpp"
 #include "COverlayScreen.hpp"
 
-/*
-  Homework starter notes:
-  - This class owns the main gameplay lifecycle.
-  - Candidates are expected to implement the TODO methods in Game.cpp.
-*/
-
 class CInputState;
 
 class Game
@@ -35,7 +29,7 @@ private:
   bool m_quitRequested = false;
   CWorld m_world;
   CHud m_hud;
-  COverlayScreen m_mainMenuScreen{"", DARKGRAY, true};
+  COverlayScreen m_mainMenuScreen{"CREATIVE 2D SHOOTER", DARKGRAY, true};
   COverlayScreen m_pausedScreen{"PAUSED", RAYWHITE, false};
   COverlayScreen m_gameOverScreen{"GAME OVER", RED, true};
   COverlayScreen m_winScreen{"YOU WON", GREEN, true};

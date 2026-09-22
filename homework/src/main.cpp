@@ -15,7 +15,7 @@ int main()
   Game game;
   game.Init(ScreenWidth, ScreenHeight, TargetFps);
 
-  while (!WindowShouldClose())
+  while (!WindowShouldClose() && !game.ShouldQuit())
   {
     game.Update(GetFrameTime());
     BeginDrawing();

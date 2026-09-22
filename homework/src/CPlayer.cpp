@@ -1,9 +1,11 @@
 #include "CPlayer.hpp"
+#include <cmath>
+#include "raymath.h"
 #include "Config.hpp"
 #include "CWeaponSpec.hpp"
 
 CPlayer::CPlayer(Vector2 spawn)
-    : CCharacter(spawn, Config::CharacterRadius, BLUE, Config::MaxHealth, Config::MoveSpeed,
+    : CCharacter(spawn, Config::CharacterRadius, Config::PlayerColor, Config::MaxHealth, Config::MoveSpeed,
                  CWeapon(CWeaponSpec::Uzi())),
       m_spawnPoint(spawn)
 {
@@ -11,47 +13,48 @@ CPlayer::CPlayer(Vector2 spawn)
 
 void CPlayer::ApplyMoveInput(Vector2 moveDir, float dt)
 {
-  // TODO: m_pendingMove = moveDir * m_moveSpeed * dt
+  m_pendingMove = Vector2Scale(moveDir, m_moveSpeed * dt);
 }
 
 void CPlayer::AimAt(Vector2 mousePos)
 {
-  // TODO: Instant facing snap toward the cursor (no turn-rate limit).
+  const Vector2 toMouse = Vector2Subtract(mousePos, m_position);
+  if (Vector2LengthSqr(toMouse) > 0.0f)
+  {
+    SetFacingRad(std::atan2(toMouse.y, toMouse.x));
+  }
 }
 
 void CPlayer::ResetToSpawn()
 {
-  // TODO: SetPosition(m_spawnPoint), full health, rebuild m_weapon fresh.
+  SetPosition(m_spawnPoint);
+  m_health = m_maxHealth;
+  m_weapon = CWeapon(CWeaponSpec::Uzi());
 }
 
 bool CPlayer::StartReload()
 {
-  // TODO: Delegate to m_weapon.StartReload().
-  return false;
+  return m_weapon.StartReload();
 }
 
 bool CPlayer::IsReloading() const
 {
-  // TODO: Delegate to m_weapon.IsReloading().
-  return false;
+  return m_weapon.IsReloading();
 }
 
 int CPlayer::AmmoInMag() const
 {
-  // TODO: Delegate to m_weapon.Ammo().
-  return 0;
+  return m_weapon.Ammo();
 }
 
 int CPlayer::MagazineSize() const
 {
-  // TODO: Delegate to m_weapon.MagazineSize().
-  return 0;
+  return m_weapon.MagazineSize();
 }
 
 float CPlayer::ReloadTimeLeft() const
 {
-  // TODO: Delegate to m_weapon.ReloadLeft().
-  return 0.0f;
+  return m_weapon.ReloadLeft();
 }
 
 Faction CPlayer::GetFaction() const
@@ -61,5 +64,6 @@ Faction CPlayer::GetFaction() const
 
 void CPlayer::Draw() const
 {
-  // TODO: Base Draw() + m_healthBar.Draw(Position(), HealthFraction()).
+  CCharacter::Draw();
+  m_healthBar.Draw(Position(), HealthFraction());
 }

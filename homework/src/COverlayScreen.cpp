@@ -1,5 +1,6 @@
 #include "COverlayScreen.hpp"
 #include "Config.hpp"
+#include "Guide.hpp"
 
 namespace
 {
@@ -21,12 +22,19 @@ COverlayScreen::COverlayScreen(std::string title, Color titleColor, bool hasButt
 
 bool COverlayScreen::Update(Vector2 mousePos, bool clicked)
 {
-  // TODO: True iff the button exists, is hovered, and was clicked this frame.
-  return false;
+  return m_hasButton && m_startButton.WasClicked(mousePos, clicked);
 }
 
 void COverlayScreen::Draw(int screenWidth, int screenHeight) const
 {
-  // TODO: Centered title (+ button if present) over whatever backdrop was
-  // already rendered.
+  constexpr int titleSize = 72;
+  const int textWidth = HomeworkGuide::MeasureUiText(m_title.c_str(), titleSize);
+  const int x = (screenWidth - textWidth) / 2;
+  const int y = screenHeight / 2 - 120;
+  HomeworkGuide::DrawUiText(m_title.c_str(), x, y, titleSize, m_titleColor);
+
+  if (m_hasButton)
+  {
+    m_startButton.Draw();
+  }
 }

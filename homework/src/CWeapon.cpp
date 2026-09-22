@@ -7,26 +7,53 @@ CWeapon::CWeapon(CWeaponSpec spec)
 
 void CWeapon::Tick(float dt)
 {
-  // TODO: Decrement m_cooldownLeft; if reloading, decrement m_reloadLeft and
-  // refill + clear the flag at zero.
+  if (m_cooldownLeft > 0.0f)
+  {
+    m_cooldownLeft -= dt;
+  }
+
+  if (m_isReloading)
+  {
+    m_reloadLeft -= dt;
+    if (m_reloadLeft <= 0.0f)
+    {
+      m_ammo = m_spec.m_magazineSize;
+      m_isReloading = false;
+      m_reloadLeft = 0.0f;
+    }
+  }
 }
 
 bool CWeapon::CanFire() const
 {
-  // TODO: !m_isReloading && m_cooldownLeft <= 0 && (m_spec.m_infiniteAmmo || m_ammo >= 1)
-  return false;
+  return !m_isReloading && m_cooldownLeft <= 0.0f && (m_spec.m_infiniteAmmo || m_ammo >= 1);
 }
 
 bool CWeapon::ConsumeShot()
 {
-  // TODO: Decrement ammo (if finite), reset m_cooldownLeft = 1 / m_spec.m_fireRate.
-  return false;
+  if (!CanFire())
+  {
+    return false;
+  }
+
+  if (!m_spec.m_infiniteAmmo)
+  {
+    --m_ammo;
+  }
+  m_cooldownLeft = 1.0f / m_spec.m_fireRate;
+  return true;
 }
 
 bool CWeapon::StartReload()
 {
-  // TODO: No-op if infinite ammo or already reloading; else start the timer.
-  return false;
+  if (m_spec.m_infiniteAmmo || m_isReloading)
+  {
+    return false;
+  }
+
+  m_isReloading = true;
+  m_reloadLeft = m_spec.m_reloadTime;
+  return true;
 }
 
 bool CWeapon::IsReloading() const
