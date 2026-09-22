@@ -12,6 +12,18 @@ namespace
     // Easy enemies carry a slower revolver; Medium/Hard use the baseline pistol.
     return (difficulty == Difficulty::Easy) ? CWeapon(CWeaponSpec::Revolver()) : CWeapon(CWeaponSpec::Pistol());
   }
+
+  int FindBlockingObstacleIndex(Vector2 from, Vector2 to, const std::vector<CObstacle>& obstacles)
+  {
+    for (std::size_t i = 0; i < obstacles.size(); ++i)
+    {
+      if (obstacles[i].BlocksSegment(from, to))
+      {
+        return static_cast<int>(i);
+      }
+    }
+    return -1;
+  }
 }
 
 CEnemy::CEnemy(Vector2 spawn, Color color, Difficulty difficulty)
@@ -28,15 +40,21 @@ void CEnemy::ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obs
 {
   Vector2 target = playerPos;
 
-  if (!HasLineOfSight(playerPos, obstacles))
+  if (HasLineOfSight(playerPos, obstacles))
   {
-    for (const CObstacle& obstacle : obstacles)
+    m_activeObstacleIndex = -1;
+    m_activeCornerIndex = -1;
+  }
+  else if (m_difficulty == Difficulty::Hard)
+  {
+    target = ChooseHardCornerTarget(playerPos, obstacles);
+  }
+  else
+  {
+    const int blockingIndex = FindBlockingObstacleIndex(m_position, playerPos, obstacles);
+    if (blockingIndex >= 0)
     {
-      if (obstacle.BlocksSegment(m_position, playerPos))
-      {
-        target = obstacle.NearestCorner(m_position);
-        break;
-      }
+      target = obstacles[blockingIndex].NearestCorner(m_position);
     }
   }
 
@@ -48,6 +66,33 @@ void CEnemy::ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obs
   }
 
   m_pendingMove = Vector2Scale(direction, m_moveSpeed * dt);
+}
+
+Vector2 CEnemy::ChooseHardCornerTarget(Vector2 playerPos, const std::vector<CObstacle>& obstacles)
+{
+  const int blockingIndex = FindBlockingObstacleIndex(m_position, playerPos, obstacles);
+  if (blockingIndex < 0)
+  {
+    return playerPos; // HasLineOfSight already said blocked; stay safe if that ever disagrees.
+  }
+
+  if (blockingIndex != m_activeObstacleIndex)
+  {
+    // Newly blocked, or a different obstacle is now in the way — restart the
+    // walk from whichever corner of it is nearest right now.
+    m_activeObstacleIndex = blockingIndex;
+    m_activeCornerIndex = obstacles[blockingIndex].NearestCornerIndex(m_position);
+  }
+  else if (Vector2Distance(m_position, obstacles[m_activeObstacleIndex].CornerApproachPoint(
+                                            m_activeCornerIndex, Config::CornerClearance)) <=
+           Config::CornerReachDistance)
+  {
+    // Reached this corner and the player is still obstructed (we're still in
+    // this branch) — move on to the next corner around the same obstacle.
+    m_activeCornerIndex = (m_activeCornerIndex + 1) % 4;
+  }
+
+  return obstacles[m_activeObstacleIndex].CornerApproachPoint(m_activeCornerIndex, Config::CornerClearance);
 }
 
 bool CEnemy::HasLineOfSight(Vector2 playerPos, const std::vector<CObstacle>& obstacles) const

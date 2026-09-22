@@ -10,6 +10,9 @@ public:
   bool BlocksCircle(Vector2 center, float radius) const;
   bool BlocksSegment(Vector2 a, Vector2 b) const;
   Vector2 NearestCorner(Vector2 from) const;
+  Vector2 CornerAt(int index) const; // 0=top-left, 1=top-right, 2=bottom-right, 3=bottom-left
+  int NearestCornerIndex(Vector2 from) const;
+  Vector2 CornerApproachPoint(int index, float clearance) const;
   float DistanceTo(Vector2 point) const;
   float GapTo(const CObstacle& other) const;
   float HalfThickness() const;

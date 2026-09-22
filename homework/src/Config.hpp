@@ -20,6 +20,18 @@ namespace Config
   constexpr float EnemyTurnRateDegPerSec = 180.0f;
   constexpr float EnemyAimToleranceDeg = 5.0f;
 
+  // Hard-difficulty corner-following steering. An enemy's own collision
+  // circle can never actually reach a corner's exact point — it stops at a
+  // tangent distance of ~CharacterRadius first, and once tangent there, any
+  // further move (toward going around the corner) gets rejected by the
+  // axis-separated slide too, freezing it in place. So the enemy instead
+  // aims for a point offset outward from the corner by CornerClearance
+  // (along the diagonal from the obstacle's center) — genuine free space to
+  // route through. CornerReachDistance is how close (px) to that offset
+  // point counts as "reached" before advancing to the next corner.
+  constexpr float CornerClearance = CharacterRadius + 8.0f;
+  constexpr float CornerReachDistance = 12.0f;
+
   // Projectiles
   constexpr float ProjectileRadius = 5.0f;
   constexpr float ProjectileSpeed = 900.0f;
@@ -65,7 +77,7 @@ namespace Config
   // Debug/testing only — set back to false before shipping. When true, the
   // player takes no damage from enemy projectiles (GameOver becomes
   // unreachable via combat).
-  constexpr bool DebugPlayerInvincible = true;
+  constexpr bool DebugPlayerInvincible = false;
 
   // Enemy color randomization (GAME_DESIGN.md §3.2): hue excluded near the
   // player's blue (~207°) so no enemy can be mistaken for the player.

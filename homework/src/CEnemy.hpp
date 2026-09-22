@@ -17,7 +17,14 @@ public:
   void UpdateFacing(float dt, Vector2 playerPos);
 
 private:
+  // Hard-only: once blocked, walks the blocking obstacle's corners in order
+  // (instead of always re-seeking the single nearest corner) until line of
+  // sight to the player reopens.
+  Vector2 ChooseHardCornerTarget(Vector2 playerPos, const std::vector<CObstacle>& obstacles);
+
   float m_turnRate;
   float m_aimTolerance;
   Difficulty m_difficulty;
+  int m_activeObstacleIndex = -1;
+  int m_activeCornerIndex = -1;
 };
