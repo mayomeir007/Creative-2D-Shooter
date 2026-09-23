@@ -34,18 +34,20 @@ namespace Config
 
   // Projectiles
   constexpr float ProjectileRadius = 5.0f;
-  constexpr float ProjectileSpeed = 900.0f;
   constexpr int DamagePerHit = 1;
 
   // Weapons
   constexpr int UziMagazineSize = 50;
   constexpr float UziFireRate = 8.0f;
   constexpr float UziReloadTime = 3.0f;
+  constexpr float UziProjectileSpeed = 900.0f;
   constexpr float PistolFireRate = 4.0f;
+  constexpr float PistolProjectileSpeed = UziProjectileSpeed * 0.8f;
 
   // Easy-difficulty enemy weapon: a slower single-action sidearm, fire rate
-  // is a fixed ratio of the player's Uzi.
+  // and projectile speed are both fixed ratios of the player's Uzi.
   constexpr float RevolverFireRate = UziFireRate * 0.25f;
+  constexpr float RevolverProjectileSpeed = UziProjectileSpeed * 0.6f;
   constexpr Color RevolverColor{150, 150, 158, 255}; // gray
 
   // Population
