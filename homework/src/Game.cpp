@@ -126,6 +126,7 @@ void Game::UpdatePlaying(float dt, const CInputState& input)
 
   if (m_world.PlayerIsDead())
   {
+    m_gamesStarted = 0; // a loss restarts the Easy/Medium/Hard progression
     SetState(GameState::GameOver);
   }
   else if (m_world.AllEnemiesDead())
