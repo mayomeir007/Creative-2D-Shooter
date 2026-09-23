@@ -112,8 +112,9 @@ namespace Config
   constexpr float DeathEffectDuration = 0.3f;
 
   constexpr Color PlayerColor{77, 171, 247, 255}; // GAME_DESIGN.md §3.1
-  constexpr Color PlayerProjectileColor{120, 215, 255, 255};
-  constexpr Color EnemyProjectileColor{255, 120, 120, 255};
+  constexpr Color UziProjectileColor{120, 215, 255, 255};
+  constexpr Color PistolProjectileColor{255, 120, 120, 255};
+  constexpr Color RevolverProjectileColor{255, 176, 176, 255}; // PistolProjectileColor, tinted closer to white
   constexpr Color GunColor{40, 44, 52, 255};
   constexpr Color EyeColor{255, 255, 255, 255};
   constexpr Color PupilColor{40, 44, 52, 255};

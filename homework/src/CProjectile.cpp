@@ -2,12 +2,13 @@
 #include "raymath.h"
 #include "Config.hpp"
 
-CProjectile::CProjectile(Vector2 position, Vector2 direction, float speed, int damage, Faction owner)
+CProjectile::CProjectile(Vector2 position, Vector2 direction, float speed, int damage, Faction owner, Color color)
     : m_position(position),
       m_velocity{direction.x * speed, direction.y * speed},
       m_radius(Config::ProjectileRadius),
       m_damage(damage),
-      m_owner(owner)
+      m_owner(owner),
+      m_color(color)
 {
 }
 
@@ -18,8 +19,7 @@ void CProjectile::Update(float dt)
 
 void CProjectile::Draw() const
 {
-  const Color color = (m_owner == Faction::Player) ? Config::PlayerProjectileColor : Config::EnemyProjectileColor;
-  DrawCircleV(m_position, m_radius, color);
+  DrawCircleV(m_position, m_radius, m_color);
 }
 
 void CProjectile::Kill()

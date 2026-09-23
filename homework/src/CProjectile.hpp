@@ -5,7 +5,7 @@
 class CProjectile
 {
 public:
-  CProjectile(Vector2 position, Vector2 direction, float speed, int damage, Faction owner);
+  CProjectile(Vector2 position, Vector2 direction, float speed, int damage, Faction owner, Color color);
 
   void Update(float dt);
   void Draw() const;
@@ -22,5 +22,6 @@ private:
   float m_radius;
   int m_damage;
   Faction m_owner;
+  Color m_color;
   bool m_alive = true;
 };

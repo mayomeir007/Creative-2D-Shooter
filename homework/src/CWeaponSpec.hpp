@@ -15,6 +15,7 @@ struct CWeaponSpec
   int m_damagePerHit = 0;
   float m_reloadTime = 0.0f;
   Color m_gunColor{40, 44, 52, 255};
+  Color m_projectileColor{255, 255, 255, 255};
 
   static CWeaponSpec Uzi();
   static CWeaponSpec Pistol();

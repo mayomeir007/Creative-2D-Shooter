@@ -12,6 +12,7 @@ CWeaponSpec CWeaponSpec::Uzi()
       Config::DamagePerHit,
       Config::UziReloadTime,
       Config::GunColor,
+      Config::UziProjectileColor,
   };
 }
 
@@ -26,6 +27,7 @@ CWeaponSpec CWeaponSpec::Pistol()
       Config::DamagePerHit,
       0.0f,
       Config::GunColor,
+      Config::PistolProjectileColor,
   };
 }
 
@@ -40,5 +42,6 @@ CWeaponSpec CWeaponSpec::Revolver()
       Config::DamagePerHit,
       0.0f,
       Config::RevolverColor,
+      Config::RevolverProjectileColor,
   };
 }

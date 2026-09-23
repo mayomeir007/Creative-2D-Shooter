@@ -164,5 +164,5 @@ std::optional<CProjectile> CCharacter::TryFire(bool wantsToFire)
   const CWeaponSpec& spec = m_weapon.Spec();
   m_weapon.ConsumeShot();
 
-  return CProjectile(spawnPos, facing, spec.m_projectileSpeed, spec.m_damagePerHit, GetFaction());
+  return CProjectile(spawnPos, facing, spec.m_projectileSpeed, spec.m_damagePerHit, GetFaction(), spec.m_projectileColor);
 }
