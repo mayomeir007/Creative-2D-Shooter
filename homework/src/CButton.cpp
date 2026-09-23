@@ -12,9 +12,9 @@ bool CButton::WasClicked(Vector2 mousePos, bool clicked) const
   return IsHovered(mousePos) && clicked;
 }
 
-void CButton::Draw() const
+void CButton::Draw(bool selected) const
 {
-  DrawRectangleRec(m_rect, Config::ButtonColor);
+  DrawRectangleRec(m_rect, selected ? Config::ButtonSelectedColor : Config::ButtonColor);
   DrawRectangleLinesEx(m_rect, 2.0f, Config::ButtonOutlineColor);
 
   constexpr int fontSize = 28;

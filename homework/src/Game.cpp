@@ -26,6 +26,7 @@ void Game::Update(float deltaTime)
   switch (m_state)
   {
     case GameState::MainMenu:
+      m_difficultySelector.Update(input.m_mousePos, input.m_clickPressed);
       if (m_mainMenuScreen.Update(input.m_mousePos, input.m_clickPressed))
       {
         StartNewGame();
@@ -59,6 +60,7 @@ void Game::Draw(int screenWidth, int screenHeight) const
   {
     case GameState::MainMenu:
       m_mainMenuScreen.Draw(screenWidth, screenHeight, m_score);
+      m_difficultySelector.Draw();
       break;
     case GameState::Playing:
       m_world.Draw();
@@ -126,7 +128,6 @@ void Game::UpdatePlaying(float dt, const CInputState& input)
 
   if (m_world.PlayerIsDead())
   {
-    m_gamesStarted = 0; // a loss restarts the Easy/Medium/Hard progression
     SetState(GameState::GameOver);
   }
   else if (m_world.AllEnemiesDead())
@@ -137,8 +138,7 @@ void Game::UpdatePlaying(float dt, const CInputState& input)
 
 void Game::StartNewGame()
 {
-  m_world.Reset(DetermineDifficulty());
-  ++m_gamesStarted;
+  m_world.Reset(m_difficultySelector.Selected());
   SetState(GameState::Playing);
 }
 
@@ -156,21 +156,4 @@ void Game::ResetScore()
 void Game::SetState(GameState s)
 {
   m_state = s;
-}
-
-Difficulty Game::DetermineDifficulty() const
-{
-  if (m_gamesStarted < Config::EasyGameCount)
-  {
-    return Difficulty::Easy;
-  }
-  if (m_gamesStarted < Config::EasyGameCount + Config::MediumGameCount)
-  {
-    return Difficulty::Medium;
-  }
-  if (m_gamesStarted < Config::EasyGameCount + Config::MediumGameCount + Config::HardGameCount)
-  {
-    return Difficulty::Hard;
-  }
-  return Difficulty::VeryHard;
 }

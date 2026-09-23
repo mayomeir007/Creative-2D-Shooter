@@ -70,15 +70,6 @@ namespace Config
   // Scoring
   constexpr int ScorePerKill = 1;
 
-  // Difficulty progression (developer-tunable): the first EasyGameCount
-  // games are Easy, the next MediumGameCount are Medium, the next
-  // HardGameCount are Hard, and everything after that is VeryHard. Counts
-  // consecutive games started since the last loss — a loss resets the count
-  // (and so the difficulty) back to Easy.
-  constexpr int EasyGameCount = 5;
-  constexpr int MediumGameCount = 5;
-  constexpr int HardGameCount = 5;
-
   // Debug/testing only — set back to false before shipping. When true, the
   // player takes no damage from enemy projectiles (GameOver becomes
   // unreachable via combat).
@@ -133,4 +124,5 @@ namespace Config
 
   constexpr Color ButtonColor{58, 66, 78, 255};
   constexpr Color ButtonOutlineColor{120, 215, 255, 255};
+  constexpr Color ButtonSelectedColor{40, 90, 120, 255};
 }

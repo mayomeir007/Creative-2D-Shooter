@@ -8,7 +8,7 @@ public:
   CButton(Rectangle rect, std::string label);
 
   bool WasClicked(Vector2 mousePos, bool clicked) const;
-  void Draw() const;
+  void Draw(bool selected = false) const;
 
 private:
   bool IsHovered(Vector2 mousePos) const;
