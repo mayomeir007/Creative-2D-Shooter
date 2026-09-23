@@ -1,5 +1,6 @@
 #include "CEnemy.hpp"
 #include <cmath>
+#include <limits>
 #include "raymath.h"
 #include "Config.hpp"
 #include "CObstacle.hpp"
@@ -9,7 +10,7 @@ namespace
 {
   CWeapon MakeEnemyWeapon(Difficulty difficulty)
   {
-    // Easy enemies carry a slower revolver; Medium/Hard use the baseline pistol.
+    // Easy enemies carry a slower revolver; every other difficulty uses the baseline pistol.
     return (difficulty == Difficulty::Easy) ? CWeapon(CWeaponSpec::Revolver()) : CWeapon(CWeaponSpec::Pistol());
   }
 
@@ -40,14 +41,23 @@ void CEnemy::ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obs
 {
   Vector2 target = playerPos;
 
-  if (HasLineOfSight(playerPos, obstacles))
+  if (m_seekingCover && Vector2Distance(m_position, m_coverTarget) <= Config::SeekCoverReachDistance)
+  {
+    m_seekingCover = false;
+  }
+
+  if (m_seekingCover)
+  {
+    target = m_coverTarget;
+  }
+  else if (HasLineOfSight(playerPos, obstacles))
   {
     m_activeObstacleIndex = -1;
     m_activeCornerIndex = -1;
   }
-  else if (m_difficulty == Difficulty::Hard)
+  else if (m_difficulty == Difficulty::VeryHard)
   {
-    target = ChooseHardCornerTarget(playerPos, obstacles);
+    target = ChooseCornerWalkTarget(playerPos, obstacles);
   }
   else
   {
@@ -68,7 +78,7 @@ void CEnemy::ChooseSteering(Vector2 playerPos, const std::vector<CObstacle>& obs
   m_pendingMove = Vector2Scale(direction, m_moveSpeed * dt);
 }
 
-Vector2 CEnemy::ChooseHardCornerTarget(Vector2 playerPos, const std::vector<CObstacle>& obstacles)
+Vector2 CEnemy::ChooseCornerWalkTarget(Vector2 playerPos, const std::vector<CObstacle>& obstacles)
 {
   const int blockingIndex = FindBlockingObstacleIndex(m_position, playerPos, obstacles);
   if (blockingIndex < 0)
@@ -93,6 +103,82 @@ Vector2 CEnemy::ChooseHardCornerTarget(Vector2 playerPos, const std::vector<CObs
   }
 
   return obstacles[m_activeObstacleIndex].CornerApproachPoint(m_activeCornerIndex, Config::CornerClearance);
+}
+
+void CEnemy::SeekCover(Vector2 playerPos, const std::vector<CObstacle>& obstacles, Rectangle arenaBounds)
+{
+  if (!Config::EnableSeekCoverAI || (m_difficulty != Difficulty::Hard && m_difficulty != Difficulty::VeryHard))
+  {
+    return; // seek-cover AI is a Hard/VeryHard behavior.
+  }
+
+  if (m_maxHealth <= 1)
+  {
+    return; // formula divides by (MaxHealth - 1); nothing to scale with a single hit point.
+  }
+
+  // 2r = d * (MaxHealth - health) / (MaxHealth - 1), so r is half of that.
+  const float diagonal = std::sqrt(arenaBounds.width * arenaBounds.width + arenaBounds.height * arenaBounds.height);
+  const float healthLost = static_cast<float>(m_maxHealth - m_health);
+  const float searchRadius = diagonal * healthLost / static_cast<float>(2 * (m_maxHealth - 1));
+
+  if (const std::optional<Vector2> cover = FindCoverPoint(playerPos, obstacles, arenaBounds, searchRadius))
+  {
+    m_seekingCover = true;
+    m_coverTarget = *cover;
+  }
+}
+
+std::optional<Vector2> CEnemy::FindCoverPoint(Vector2 playerPos, const std::vector<CObstacle>& obstacles,
+                                               Rectangle arenaBounds, float searchRadius) const
+{
+  std::optional<Vector2> best;
+  float bestDistSqr = std::numeric_limits<float>::max();
+
+  for (int ring = 1; ring <= Config::SeekCoverRadialSteps; ++ring)
+  {
+    const float ringRadius = searchRadius * static_cast<float>(ring) / static_cast<float>(Config::SeekCoverRadialSteps);
+
+    for (int step = 0; step < Config::SeekCoverAngularSteps; ++step)
+    {
+      const float angle = (2.0f * PI * static_cast<float>(step)) / static_cast<float>(Config::SeekCoverAngularSteps);
+      const Vector2 candidate{m_position.x + ringRadius * std::cos(angle), m_position.y + ringRadius * std::sin(angle)};
+
+      if (candidate.x - m_radius < arenaBounds.x || candidate.x + m_radius > arenaBounds.x + arenaBounds.width ||
+          candidate.y - m_radius < arenaBounds.y || candidate.y + m_radius > arenaBounds.y + arenaBounds.height)
+      {
+        continue; // outside the arena
+      }
+
+      bool reachable = true;
+      bool obstructed = false;
+      for (const CObstacle& obstacle : obstacles)
+      {
+        if (obstacle.BlocksCircle(candidate, m_radius))
+        {
+          reachable = false;
+          break;
+        }
+        if (obstacle.BlocksSegment(candidate, playerPos))
+        {
+          obstructed = true;
+        }
+      }
+      if (!reachable || !obstructed)
+      {
+        continue;
+      }
+
+      const float distSqr = Vector2DistanceSqr(m_position, candidate);
+      if (distSqr < bestDistSqr)
+      {
+        bestDistSqr = distSqr;
+        best = candidate;
+      }
+    }
+  }
+
+  return best;
 }
 
 bool CEnemy::HasLineOfSight(Vector2 playerPos, const std::vector<CObstacle>& obstacles) const

@@ -69,15 +69,31 @@ namespace Config
   constexpr int ScorePerKill = 1;
 
   // Difficulty progression (developer-tunable): the first EasyGameCount
-  // games are Easy, the next MediumGameCount are Medium, everything after
-  // that is Hard. Counts every Start press for the life of the app.
+  // games are Easy, the next MediumGameCount are Medium, the next
+  // HardGameCount are Hard, and everything after that is VeryHard. Counts
+  // consecutive games started since the last loss — a loss resets the count
+  // (and so the difficulty) back to Easy.
   constexpr int EasyGameCount = 5;
   constexpr int MediumGameCount = 5;
+  constexpr int HardGameCount = 5;
 
   // Debug/testing only — set back to false before shipping. When true, the
   // player takes no damage from enemy projectiles (GameOver becomes
   // unreachable via combat).
   constexpr bool DebugPlayerInvincible = false;
+
+  // Seek-cover AI toggle. When true, an enemy that takes damage searches a
+  // disk of radius r around its current position for the nearest point whose
+  // line of sight to the player is obstructed, then walks there before
+  // resuming its normal difficulty-driven behavior. r grows as the enemy's
+  // remaining health drops: 2r = d * (MaxHealth - health) / (MaxHealth - 1),
+  // where d is the arena's diagonal — a barely-hurt enemy only checks a
+  // small pocket nearby, a nearly-dead one searches out to the full
+  // diagonal.
+  constexpr bool EnableSeekCoverAI = true;
+  constexpr int SeekCoverRadialSteps = 10;
+  constexpr int SeekCoverAngularSteps = 24;
+  constexpr float SeekCoverReachDistance = 12.0f;
 
   // Enemy color randomization (GAME_DESIGN.md §3.2): hue excluded near the
   // player's blue (~207°) so no enemy can be mistaken for the player.

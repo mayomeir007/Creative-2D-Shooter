@@ -72,6 +72,11 @@ void CHud::DrawDifficulty(Difficulty difficulty) const
     name = "Hard";
     color = RED;
   }
+  else if (difficulty == Difficulty::VeryHard)
+  {
+    name = "Very Hard";
+    color = MAROON;
+  }
 
   HomeworkGuide::DrawUiText(TextFormat("Difficulty: %s", name), leftMargin, topMargin, fontSize, color);
 }

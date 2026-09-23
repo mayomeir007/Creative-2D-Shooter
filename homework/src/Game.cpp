@@ -168,5 +168,9 @@ Difficulty Game::DetermineDifficulty() const
   {
     return Difficulty::Medium;
   }
-  return Difficulty::Hard;
+  if (m_gamesStarted < Config::EasyGameCount + Config::MediumGameCount + Config::HardGameCount)
+  {
+    return Difficulty::Hard;
+  }
+  return Difficulty::VeryHard;
 }

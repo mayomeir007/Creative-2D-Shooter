@@ -280,6 +280,10 @@ void CWorld::ResolveProjectileCollisions()
         {
           m_effects.push_back(CEffect::Death(enemy.Position(), enemy.Radius(), enemy.GetColor()));
         }
+        else
+        {
+          enemy.SeekCover(m_player.Position(), m_obstacles, m_arena.Bounds());
+        }
         projectile.Kill();
         break;
       }
