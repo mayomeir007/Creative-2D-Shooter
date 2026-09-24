@@ -17,7 +17,8 @@ namespace Config
   constexpr float CharacterRadius = 32.0f;
   constexpr float PlayerMoveSpeed = 260.0f;
   constexpr float EnemyMoveSpeed = 260.0f;
-  constexpr int MaxHealth = 6;
+  constexpr int PlayerMaxHealth = 6;
+  constexpr int EnemyMaxHealth = 6;
   constexpr float EnemyTurnRateDegPerSec = 180.0f;
   constexpr float EnemyAimToleranceDeg = 5.0f;
 
@@ -80,7 +81,7 @@ namespace Config
   // disk of radius r around its current position for the nearest point whose
   // line of sight to the player is obstructed, then walks there before
   // resuming its normal difficulty-driven behavior. r grows as the enemy's
-  // remaining health drops: 2r = d * (MaxHealth - health) / (MaxHealth - 1),
+  // remaining health drops: 2r = d * (EnemyMaxHealth - health) / (EnemyMaxHealth - 1),
   // where d is the arena's diagonal — a barely-hurt enemy only checks a
   // small pocket nearby, a nearly-dead one searches out to the full
   // diagonal.

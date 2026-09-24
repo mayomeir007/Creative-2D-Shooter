@@ -5,7 +5,7 @@
 #include "CWeaponSpec.hpp"
 
 CPlayer::CPlayer(Vector2 spawn)
-    : CCharacter(spawn, Config::CharacterRadius, Config::PlayerColor, Config::MaxHealth, Config::PlayerMoveSpeed,
+    : CCharacter(spawn, Config::CharacterRadius, Config::PlayerColor, Config::PlayerMaxHealth, Config::PlayerMoveSpeed,
                  CWeapon(CWeaponSpec::Uzi())),
       m_spawnPoint(spawn)
 {
