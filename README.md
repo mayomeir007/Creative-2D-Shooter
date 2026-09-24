@@ -2,6 +2,8 @@
 
 A top-down 2D arena shooter written in modern C++ (C++23) on top of raylib, built around a small set of focused classes (world, characters, weapons, obstacles, HUD). Enemy AI scales across four difficulty levels, and all gameplay tuning lives in a single header, `Config.hpp`.
 
+![Game screenshot](Example.png)
+
 ## Game manual
 
 ### Mission
