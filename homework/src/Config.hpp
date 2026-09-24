@@ -15,7 +15,8 @@ namespace Config
 
   // Characters
   constexpr float CharacterRadius = 32.0f;
-  constexpr float MoveSpeed = 260.0f;
+  constexpr float PlayerMoveSpeed = 260.0f;
+  constexpr float EnemyMoveSpeed = 260.0f;
   constexpr int MaxHealth = 6;
   constexpr float EnemyTurnRateDegPerSec = 180.0f;
   constexpr float EnemyAimToleranceDeg = 5.0f;

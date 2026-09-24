@@ -28,7 +28,7 @@ namespace
 }
 
 CEnemy::CEnemy(Vector2 spawn, Color color, Difficulty difficulty)
-    : CCharacter(spawn, Config::CharacterRadius, color, Config::MaxHealth, Config::MoveSpeed,
+    : CCharacter(spawn, Config::CharacterRadius, color, Config::MaxHealth, Config::EnemyMoveSpeed,
                  MakeEnemyWeapon(difficulty)),
       m_turnRate(Config::EnemyTurnRateDegPerSec),
       m_aimTolerance(Config::EnemyAimToleranceDeg),
