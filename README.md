@@ -1,6 +1,6 @@
 # Creative 2D Shooter Game
 
-A top-down 2D arena shooter written in modern C++ (C++23) on top of raylib, built around a small set of focused classes (world, characters, weapons, obstacles, HUD). Enemy AI scales across four difficulty levels, and all gameplay tuning lives in a single header, `Config.hpp`.
+A 2D arena shooter game written with modern C++ (C++23), STL and raylib libraries. It is built around a small set of focused classes (world, characters, weapons, obstacles, HUD). Enemy AI scales across four difficulty levels, and all gameplay tuning lives in a single header, `Config.hpp`.
 
 ## Game manual
 
@@ -22,7 +22,7 @@ Difficulty is picked on the main menu and is locked for the duration of a game. 
 
 Each level adds to the previous one:
 
-| Level     | Enemy behavior                                                                      |
+| Level     |                                                                                     |
 |-----------|-------------------------------------------------------------------------------------|
 | Easy      | Enemy weapon is a revolver                                                          |
 | Medium    | Enemy weapon is upgraded to a pistol                                                |
